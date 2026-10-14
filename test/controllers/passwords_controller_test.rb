@@ -49,6 +49,16 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
     assert_notice "Password has been reset"
   end
 
+  test "admins can reset their password" do
+    admin = AdminAccount.create!(email_address: "admin@example.com", password: "old-password")
+    token = admin.password_reset_token
+
+    assert_changes -> { admin.reload.password_digest } do
+      put password_path(token), params: { password: "new-password", password_confirmation: "new-password" }
+      assert_redirected_to new_session_path
+    end
+  end
+
   test "update with non matching passwords" do
     token = @user.password_reset_token
     assert_no_changes -> { @user.reload.password_digest } do
@@ -62,6 +72,6 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
 
   private
     def assert_notice(text)
-      assert_select "div", /#{text}/
+      assert_select '[role="status"], [role="alert"]', text: /#{text}/
     end
 end

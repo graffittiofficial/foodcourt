@@ -1,0 +1,13 @@
+<% content_for :title, "Restaurants | Admin" %>
+<div class="mb-6 flex items-center justify-between gap-4">
+  <h1 class="text-3xl font-bold text-stone-900">Restaurants</h1>
+  <%= link_to "Add restaurant", new_admin_restaurant_path, class: "rounded-lg bg-orange-600 px-4 py-2.5 font-semibold text-white" %>
+</div>
+<ul class="space-y-3">
+  <% @restaurants.each do |restaurant| %>
+    <li class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-stone-200 bg-white p-5">
+      <div><h2 class="font-semibold"><%= restaurant.name %></h2><p class="text-sm text-stone-600"><%= restaurant.stripe_connected? ? "Stripe Connect ready" : "Stripe onboarding required" %> · <%= restaurant.delivery_configured? ? "Delivery configured" : "Delivery settings incomplete" %></p></div>
+      <%= link_to "Edit settings", edit_admin_restaurant_path(restaurant), class: "font-semibold text-orange-700 underline" %>
+    </li>
+  <% end %>
+</ul>

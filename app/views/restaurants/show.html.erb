@@ -1,0 +1,30 @@
+<% content_for :title, "#{@restaurant.name} | Foodcourt" %>
+<div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+  <div>
+    <%= link_to "All restaurants", restaurants_path, class: "text-sm font-semibold text-orange-700 hover:underline" %>
+    <h1 class="mt-2 text-3xl font-bold text-stone-900"><%= @restaurant.name %></h1>
+    <% if @restaurant.description.present? %><p class="mt-2 text-stone-600"><%= @restaurant.description %></p><% end %>
+  </div>
+  <%= link_to "View basket", cart_path, class: "rounded-lg border border-stone-300 px-4 py-2.5 font-semibold text-stone-700 hover:bg-stone-50" %>
+</div>
+
+<% if @menu_items.empty? %>
+  <p class="rounded-xl border border-dashed border-stone-300 p-8 text-center text-stone-600">This restaurant has no available menu items right now.</p>
+<% else %>
+  <div class="grid gap-4">
+    <% @menu_items.each do |menu_item| %>
+      <article class="flex flex-wrap items-center justify-between gap-5 rounded-xl border border-stone-200 bg-white p-5">
+        <div>
+          <h2 class="font-semibold text-stone-900"><%= menu_item.name %></h2>
+          <% if menu_item.description.present? %><p class="mt-1 text-sm text-stone-600"><%= menu_item.description %></p><% end %>
+          <p class="mt-2 font-semibold text-stone-800"><%= number_to_currency(menu_item.price) %></p>
+        </div>
+        <%= form_with url: cart_items_path, class: "flex items-center gap-2" do |form| %>
+          <%= hidden_field_tag :menu_item_id, menu_item.id %>
+          <%= number_field_tag :quantity, 1, min: 1, step: 1, required: true, class: "w-20 rounded-lg border border-stone-300 px-3 py-2", aria: { label: "Quantity for #{menu_item.name}" } %>
+          <%= form.submit "Add to basket", class: "rounded-lg bg-orange-600 px-3 py-2 font-semibold text-white hover:bg-orange-700" %>
+        <% end %>
+      </article>
+    <% end %>
+  </div>
+<% end %>

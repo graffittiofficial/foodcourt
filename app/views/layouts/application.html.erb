@@ -24,6 +24,48 @@
   </head>
 
   <body>
-    <%= yield %>
+    <header class="border-b border-stone-200 bg-white">
+      <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <%= link_to "Foodcourt", root_path, class: "text-xl font-bold text-stone-900" %>
+        <% if Current.account&.staff? %>
+          <nav class="flex items-center gap-5 text-sm font-medium text-stone-700" aria-label="Staff navigation">
+            <%= link_to "Dashboard", staff_dashboard_path %>
+            <%= link_to "Orders", staff_orders_path %>
+            <%= link_to "Menu", staff_menu_items_path %>
+            <%= button_to "Sign out", session_path, method: :delete, class: "text-stone-700" %>
+          </nav>
+        <% elsif Current.account&.admin? %>
+          <nav class="flex items-center gap-5 text-sm font-medium text-stone-700" aria-label="Admin navigation">
+            <%= link_to "Administration", admin_root_path %>
+            <%= button_to "Sign out", session_path, method: :delete, class: "text-stone-700" %>
+          </nav>
+        <% elsif Current.account&.driver? %>
+          <nav class="flex items-center gap-5 text-sm font-medium text-stone-700" aria-label="Driver navigation">
+            <%= link_to "My deliveries", driver_root_path %>
+            <%= button_to "Sign out", session_path, method: :delete, class: "text-stone-700" %>
+          </nav>
+        <% elsif Current.account&.customer? %>
+          <nav class="flex items-center gap-5 text-sm font-medium text-stone-700" aria-label="Customer navigation">
+            <%= link_to "Restaurants", restaurants_path %>
+            <%= link_to "Basket", cart_path %>
+            <%= link_to "My orders", orders_path %>
+            <%= button_to "Sign out", session_path, method: :delete, class: "text-stone-700" %>
+          </nav>
+        <% else %>
+          <nav class="flex items-center gap-5 text-sm font-medium text-stone-700" aria-label="Account navigation">
+            <%= link_to "Restaurants", restaurants_path %>
+            <%= link_to "Basket", cart_path %>
+            <%= link_to "Sign in", new_session_path %>
+            <%= link_to "Create account", new_registration_path, class: "rounded-lg bg-orange-600 px-3 py-2 text-white" %>
+          </nav>
+        <% end %>
+      </div>
+    </header>
+    <main class="mx-auto max-w-7xl px-6 py-8">
+      <% flash.each do |type, message| %>
+        <p class="mb-5 rounded-lg px-4 py-3 <%= type == "alert" ? "bg-red-50 text-red-800" : "bg-green-50 text-green-800" %>" role="<%= type == "alert" ? "alert" : "status" %>"><%= message %></p>
+      <% end %>
+      <%= yield %>
+    </main>
   </body>
 </html>

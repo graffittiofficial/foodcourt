@@ -1,0 +1,18 @@
+<% content_for :title, "Create account | Foodcourt" %>
+<section class="mx-auto max-w-xl rounded-2xl border border-stone-200 bg-white p-8">
+  <h1 class="text-3xl font-bold text-stone-900">Create your customer account</h1>
+  <p class="mt-2 text-stone-600">Your basket will be waiting when you continue to checkout.</p>
+  <% if @user.errors.any? %>
+    <div class="mt-5 rounded-lg bg-red-50 p-4 text-red-800" role="alert">
+      <ul class="list-inside list-disc"><% @user.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul>
+    </div>
+  <% end %>
+  <%= form_with model: @user, url: registration_path, class: "mt-6 space-y-4" do |form| %>
+    <div><%= form.label :name, class: "mb-1 block font-semibold" %><%= form.text_field :name, required: true, autocomplete: "name", class: "w-full rounded-lg border border-stone-300 px-3 py-2" %></div>
+    <div><%= form.label :email_address, "Email address", class: "mb-1 block font-semibold" %><%= form.email_field :email_address, required: true, autocomplete: "email", class: "w-full rounded-lg border border-stone-300 px-3 py-2" %></div>
+    <div><%= form.label :password, class: "mb-1 block font-semibold" %><%= form.password_field :password, required: true, minlength: 8, autocomplete: "new-password", class: "w-full rounded-lg border border-stone-300 px-3 py-2" %></div>
+    <div><%= form.label :password_confirmation, class: "mb-1 block font-semibold" %><%= form.password_field :password_confirmation, required: true, autocomplete: "new-password", class: "w-full rounded-lg border border-stone-300 px-3 py-2" %></div>
+    <%= form.submit "Create account", class: "w-full rounded-lg bg-orange-600 px-4 py-3 font-semibold text-white hover:bg-orange-700" %>
+  <% end %>
+  <p class="mt-5 text-sm text-stone-600">Already registered? <%= link_to "Sign in", new_session_path, class: "font-semibold text-orange-700 hover:underline" %></p>
+</section>
