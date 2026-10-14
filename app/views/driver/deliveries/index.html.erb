@@ -1,0 +1,27 @@
+<% content_for :title, "My deliveries | Foodcourt" %>
+<h1 class="mb-6 text-3xl font-bold text-stone-900">My deliveries</h1>
+<% if @orders.empty? %>
+  <p class="rounded-xl border border-dashed border-stone-300 p-8 text-center text-stone-600">No deliveries have been assigned to you.</p>
+<% else %>
+  <div class="space-y-4">
+    <% @orders.each do |order| %>
+      <article class="rounded-xl border border-stone-200 bg-white p-5">
+        <div class="flex flex-wrap justify-between gap-3">
+          <div>
+            <h2 class="font-bold"><%= order.restaurant.name %> · Order #<%= order.id %></h2>
+            <p class="mt-1 text-sm text-stone-600">Recipient: <%= order.customer_name %> · <%= order.checkout_group.checkout.customer_phone %></p>
+            <p class="text-sm text-stone-600"><%= order.checkout_group.checkout.address_line1 %><%= ", #{order.checkout_group.checkout.address_line2}" if order.checkout_group.checkout.address_line2.present? %>, <%= order.checkout_group.checkout.city %> <%= order.checkout_group.checkout.region %> <%= order.checkout_group.checkout.postal_code %></p>
+          </div>
+          <p class="font-semibold"><%= order.delivery_status.humanize %></p>
+        </div>
+        <ul class="mt-4 list-inside list-disc text-sm text-stone-700">
+          <% order.order_items.each do |item| %><li><%= item.quantity %> × <%= item.menu_item_name %></li><% end %>
+        </ul>
+        <% if order.assigned? || order.picked_up? %>
+          <% next_label = order.assigned? ? "Mark picked up" : "Mark delivered" %>
+          <%= button_to next_label, advance_driver_delivery_path(order), method: :patch, class: "mt-4 rounded-lg bg-emerald-700 px-4 py-2.5 font-semibold text-white" %>
+        <% end %>
+      </article>
+    <% end %>
+  </div>
+<% end %>

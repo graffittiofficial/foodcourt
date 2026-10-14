@@ -1,0 +1,55 @@
+<% content_for :title, "Delivery and payment | Foodcourt" %>
+<h1 class="mb-6 text-3xl font-bold text-stone-900">Delivery and payment</h1>
+
+<% if @entries.empty? %>
+  <p class="rounded-xl border border-dashed border-stone-300 p-8 text-center text-stone-600">Your basket is empty. <%= link_to "Browse restaurants", restaurants_path, class: "font-semibold text-orange-700 underline" %></p>
+<% else %>
+  <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
+    <%= form_with scope: :checkout, url: checkouts_path, data: { controller: "address-autocomplete", address_autocomplete_api_key_value: ENV["GOOGLE_MAPS_BROWSER_API_KEY"] }, class: "space-y-6" do |form| %>
+      <section class="space-y-4 rounded-xl border border-stone-200 bg-white p-6">
+        <h2 class="text-xl font-bold text-stone-900">Delivery contact</h2>
+        <div>
+          <%= form.label :customer_name, "Recipient name", class: "mb-1 block font-semibold text-stone-800" %>
+          <%= form.text_field :customer_name, value: @customer_name, required: true, autocomplete: "name", class: "w-full rounded-lg border border-stone-300 px-3 py-2" %>
+        </div>
+        <div>
+          <%= form.label :customer_phone, "Contact phone", class: "mb-1 block font-semibold text-stone-800" %>
+          <%= form.telephone_field :customer_phone, required: true, autocomplete: "tel", class: "w-full rounded-lg border border-stone-300 px-3 py-2" %>
+        </div>
+      </section>
+
+      <section class="space-y-4 rounded-xl border border-stone-200 bg-white p-6">
+        <h2 class="text-xl font-bold text-stone-900">Delivery address</h2>
+        <% if ENV["GOOGLE_MAPS_BROWSER_API_KEY"].blank? %>
+          <p class="rounded-lg bg-amber-50 p-3 text-sm text-amber-900" role="alert">Address autocomplete is not configured. Contact the site administrator before placing this order.</p>
+        <% else %>
+          <p class="text-sm text-stone-600">Choose a suggested address so we can verify restaurant delivery distance.</p>
+          <%= text_field_tag :delivery_address_search, nil, id: "delivery-address-search", placeholder: "Search for an address", autocomplete: "off", class: "w-full rounded-lg border border-stone-300 px-3 py-2", data: { address_autocomplete_target: "input" } %>
+        <% end %>
+        <%= form.hidden_field :google_place_id, required: true, data: { address_autocomplete_target: "placeId" } %>
+        <div>
+          <%= form.label :address_line2, "Apartment, suite, or unit (optional)", class: "mb-1 block font-semibold text-stone-800" %>
+          <%= form.text_field :address_line2, autocomplete: "address-line2", class: "w-full rounded-lg border border-stone-300 px-3 py-2" %>
+        </div>
+        <p class="text-sm text-stone-500" data-address-autocomplete-target="message" role="status"></p>
+      </section>
+
+      <%= form.submit "Continue to secure payment", disabled: @entries.any? { |entry| !entry.available } || ENV["GOOGLE_MAPS_BROWSER_API_KEY"].blank?, class: "rounded-lg bg-orange-600 px-5 py-3 font-semibold text-white hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50" %>
+    <% end %>
+
+    <aside class="h-fit rounded-xl border border-stone-200 bg-white p-6">
+      <h2 class="text-xl font-bold text-stone-900">Your basket</h2>
+      <ul class="mt-4 space-y-3">
+        <% @entries.each do |entry| %>
+          <li class="flex justify-between gap-3 text-sm">
+            <span><%= entry.quantity %> × <%= entry.menu_item&.name || "Unavailable item" %><% if entry.menu_item %><span class="block text-stone-500"><%= entry.menu_item.restaurant.name %></span><% end %></span>
+            <% if entry.available %><span class="font-semibold"><%= number_to_currency(entry.menu_item.price * entry.quantity) %></span><% end %>
+          </li>
+        <% end %>
+      </ul>
+      <p class="mt-5 flex justify-between border-t border-stone-200 pt-4 font-bold"><span>Menu subtotal</span><span><%= number_to_currency(@total) %></span></p>
+      <p class="mt-2 text-sm text-stone-500">Delivery fees are calculated by driving distance for each restaurant before you pay.</p>
+      <%= link_to "Edit basket", cart_path, class: "mt-4 inline-block text-sm font-semibold text-orange-700 hover:underline" %>
+    </aside>
+  </div>
+<% end %>

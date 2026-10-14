@@ -1,0 +1,32 @@
+<%= form_with model: [:admin, restaurant], class: "max-w-3xl space-y-6" do |form| %>
+  <% if restaurant.errors.any? %>
+    <div class="rounded-lg bg-red-50 p-4 text-red-800" role="alert"><ul class="list-inside list-disc"><% restaurant.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul></div>
+  <% end %>
+  <section class="space-y-4 rounded-xl border border-stone-200 bg-white p-6">
+    <h2 class="text-xl font-bold">Restaurant details</h2>
+    <div><%= form.label :name, class: "mb-1 block font-semibold" %><%= form.text_field :name, required: true, class: "w-full rounded-lg border border-stone-300 px-3 py-2" %></div>
+    <div><%= form.label :description, class: "mb-1 block font-semibold" %><%= form.text_area :description, rows: 3, class: "w-full rounded-lg border border-stone-300 px-3 py-2" %></div>
+  </section>
+  <section class="space-y-4 rounded-xl border border-stone-200 bg-white p-6" data-controller="address-autocomplete" data-address-autocomplete-api-key-value="<%= ENV["GOOGLE_MAPS_BROWSER_API_KEY"] %>">
+    <h2 class="text-xl font-bold">Delivery location and pricing</h2>
+    <p class="text-sm text-stone-600">Select the restaurant pickup location. Delivery fees use driving distance from this address.</p>
+    <% if ENV["GOOGLE_MAPS_BROWSER_API_KEY"].present? %>
+      <%= text_field_tag :restaurant_location_search, nil, placeholder: "Search for restaurant address", autocomplete: "off", class: "w-full rounded-lg border border-stone-300 px-3 py-2", data: { address_autocomplete_target: "input" } %>
+    <% else %>
+      <p class="rounded-lg bg-amber-50 p-3 text-sm text-amber-900" role="alert">Google Places autocomplete is not configured.</p>
+    <% end %>
+    <%= form.hidden_field :google_place_id, data: { address_autocomplete_target: "placeId" } %>
+    <%= form.hidden_field :address_line1, data: { address_autocomplete_target: "addressLine1" } %>
+    <%= form.hidden_field :city, data: { address_autocomplete_target: "city" } %>
+    <%= form.hidden_field :region, data: { address_autocomplete_target: "region" } %>
+    <%= form.hidden_field :postal_code, data: { address_autocomplete_target: "postalCode" } %>
+    <%= form.hidden_field :country_code, data: { address_autocomplete_target: "countryCode" } %>
+    <p class="text-sm text-stone-500" data-address-autocomplete-target="message" role="status"></p>
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div><%= form.label :delivery_base_fee, "Base fee (USD)", class: "mb-1 block font-semibold" %><%= form.number_field :delivery_base_fee, min: 0, step: "0.01", required: true, class: "w-full rounded-lg border border-stone-300 px-3 py-2" %></div>
+      <div><%= form.label :delivery_fee_per_km, "Fee per km (USD)", class: "mb-1 block font-semibold" %><%= form.number_field :delivery_fee_per_km, min: 0, step: "0.01", required: true, class: "w-full rounded-lg border border-stone-300 px-3 py-2" %></div>
+      <div><%= form.label :max_delivery_distance_km, "Maximum distance (km)", class: "mb-1 block font-semibold" %><%= form.number_field :max_delivery_distance_km, min: "0.01", step: "0.01", required: true, class: "w-full rounded-lg border border-stone-300 px-3 py-2" %></div>
+    </div>
+  </section>
+  <%= form.submit class: "rounded-lg bg-orange-600 px-5 py-3 font-semibold text-white" %>
+<% end %>
