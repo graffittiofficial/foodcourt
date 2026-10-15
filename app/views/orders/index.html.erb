@@ -1,18 +1,37 @@
 <% content_for :title, "Your orders | Foodcourt" %>
-<h1 class="mb-6 text-3xl font-bold text-stone-900">Your orders</h1>
+<div class="mb-8">
+  <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Your account</p>
+  <h1 class="mt-2 text-3xl font-bold tracking-tight text-stone-950 sm:text-4xl">Your orders</h1>
+  <p class="mt-2 text-stone-600">Follow your deliveries and revisit your past orders.</p>
+</div>
+
 <% if @orders.empty? %>
-  <p class="rounded-xl border border-dashed border-stone-300 p-8 text-center text-stone-600">You have no orders yet. <%= link_to "Browse restaurants", restaurants_path, class: "font-semibold text-orange-700 underline" %></p>
+  <section class="rounded-3xl border border-stone-200 bg-white p-10 text-center">
+    <h2 class="text-xl font-bold text-stone-950">No orders yet</h2>
+    <p class="mt-2 text-stone-600">Your next favorite meal is just around the corner.</p>
+    <%= link_to "Explore restaurants", restaurants_path, class: "mt-6 inline-flex rounded-full bg-stone-950 px-6 py-3 font-semibold text-white hover:bg-stone-700" %>
+  </section>
 <% else %>
   <ul class="space-y-4">
     <% @orders.each do |order| %>
-      <li class="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-stone-200 bg-white p-5">
-        <div>
-          <h2 class="font-semibold text-stone-900"><%= order.restaurant.name %> · Order #<%= order.id %></h2>
-          <p class="mt-1 text-sm text-stone-600">Kitchen: <%= order.status.humanize %> · Delivery: <%= order.delivery_status.humanize %></p>
-        </div>
-        <div class="text-right">
-          <p class="font-bold"><%= number_to_currency(order.total) %></p>
-          <%= link_to "Track order", order_path(order), class: "text-sm font-semibold text-orange-700 underline" %>
+      <li class="overflow-hidden rounded-3xl border border-stone-200 bg-white">
+        <div class="flex flex-wrap items-center justify-between gap-4 p-5 sm:p-6">
+          <div class="flex min-w-0 items-center gap-4">
+            <% if order.restaurant.photo.attached? %>
+              <%= image_tag order.restaurant.photo, class: "size-16 rounded-2xl object-cover", alt: order.restaurant.name %>
+            <% else %>
+              <div class="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-stone-100 text-2xl font-bold text-stone-300"><%= order.restaurant.name.first(1).upcase %></div>
+            <% end %>
+            <div class="min-w-0">
+              <h2 class="truncate font-bold text-stone-950"><%= order.restaurant.name %></h2>
+              <p class="mt-1 text-sm text-stone-500">Order #<%= order.id %> · <%= l(order.created_at, format: :short) %></p>
+              <p class="mt-2 text-sm font-semibold text-stone-700"><%= order.delivery_status.humanize %></p>
+            </div>
+          </div>
+          <div class="flex w-full items-center justify-between gap-4 border-t border-stone-100 pt-4 sm:w-auto sm:border-0 sm:pt-0">
+            <p class="font-bold text-stone-950"><%= number_to_currency(order.total) %></p>
+            <%= link_to "Track order", order_path(order), class: "rounded-full bg-stone-950 px-5 py-2.5 text-sm font-semibold text-white hover:bg-stone-700" %>
+          </div>
         </div>
       </li>
     <% end %>

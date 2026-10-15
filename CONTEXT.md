@@ -18,6 +18,10 @@ This project is a Rails-based food ordering application for a food court or rest
 - User: an authenticated person interacting with the app.
 - Menu availability: whether an active menu item can be ordered; archived items are removed from the active menu.
 - Order status: the kitchen workflow states pending, preparing, ready, completed, and cancelled.
+- Restaurant photo: the administrator-managed cover image displayed in customer restaurant discovery and tracking.
+- Menu photo: the administrator-managed image for a menu item, shown in menus, baskets, and order details.
+- Review: a customer's one-to-five-star rating and optional comment for a restaurant or menu item from a delivered Order; public immediately and editable or deletable by its author.
+- Rating summary: the average and count of published Reviews for a Restaurant or Menu item; never a manually invented score.
 
 ## Use this vocabulary consistently
 

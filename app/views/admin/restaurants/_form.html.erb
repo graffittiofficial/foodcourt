@@ -6,6 +6,13 @@
     <h2 class="text-xl font-bold">Restaurant details</h2>
     <div><%= form.label :name, class: "mb-1 block font-semibold" %><%= form.text_field :name, required: true, class: "w-full rounded-lg border border-stone-300 px-3 py-2" %></div>
     <div><%= form.label :description, class: "mb-1 block font-semibold" %><%= form.text_area :description, rows: 3, class: "w-full rounded-lg border border-stone-300 px-3 py-2" %></div>
+    <% if restaurant.photo.attached? %>
+      <%= image_tag restaurant.photo, class: "aspect-[16/7] w-full rounded-xl object-cover", alt: restaurant.name %>
+    <% end %>
+    <div>
+      <%= form.label :photo, "Restaurant cover photo (JPEG, PNG, or WebP; max 5 MB)", class: "mb-1 block font-semibold" %>
+      <%= form.file_field :photo, accept: "image/jpeg,image/png,image/webp", class: "block w-full text-sm text-stone-600 file:mr-4 file:rounded-full file:border-0 file:bg-stone-900 file:px-4 file:py-2 file:font-semibold file:text-white" %>
+    </div>
   </section>
   <section class="space-y-4 rounded-xl border border-stone-200 bg-white p-6" data-controller="address-autocomplete" data-address-autocomplete-api-key-value="<%= ENV["GOOGLE_MAPS_BROWSER_API_KEY"] %>">
     <h2 class="text-xl font-bold">Delivery location and pricing</h2>
@@ -28,5 +35,5 @@
       <div><%= form.label :max_delivery_distance_km, "Maximum distance (km)", class: "mb-1 block font-semibold" %><%= form.number_field :max_delivery_distance_km, min: "0.01", step: "0.01", required: true, class: "w-full rounded-lg border border-stone-300 px-3 py-2" %></div>
     </div>
   </section>
-  <%= form.submit class: "rounded-lg bg-orange-600 px-5 py-3 font-semibold text-white" %>
+  <%= form.submit class: "rounded-full bg-stone-950 px-5 py-3 font-semibold text-white hover:bg-stone-700" %>
 <% end %>

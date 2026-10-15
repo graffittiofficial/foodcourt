@@ -3,7 +3,7 @@ module Admin
     before_action :set_restaurant, only: %i[edit update connect]
 
     def index
-      @restaurants = Restaurant.order(:name)
+      @restaurants = Restaurant.includes(:photo_attachment).order(:name)
     end
 
     def new
@@ -20,6 +20,7 @@ module Admin
     end
 
     def edit
+      @menu_items = @restaurant.menu_items.active.includes(:photo_attachment).order(:name)
       sync_stripe_onboarding if params[:connect] == "return" && @restaurant.stripe_account_id.present?
     end
 
@@ -27,6 +28,7 @@ module Admin
       if @restaurant.update(restaurant_params)
         redirect_to edit_admin_restaurant_path(@restaurant), notice: "Restaurant updated."
       else
+        @menu_items = @restaurant.menu_items.active.includes(:photo_attachment).order(:name)
         render :edit, status: :unprocessable_entity
       end
     end
@@ -61,6 +63,7 @@ module Admin
       params.require(:restaurant).permit(
         :name,
         :description,
+        :photo,
         :address_line1,
         :city,
         :region,

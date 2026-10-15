@@ -10,9 +10,37 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_14_081500) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_15_002000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "filename", null: false
+    t.string "content_type"
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.bigint "byte_size", null: false
+    t.string "checksum"
+    t.datetime "created_at", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
 
   create_table "admins", force: :cascade do |t|
     t.string "email_address", null: false
@@ -170,6 +198,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_14_081500) do
     t.check_constraint "max_delivery_distance_km IS NULL OR max_delivery_distance_km > 0::numeric", name: "restaurants_delivery_radius_positive"
   end
 
+  create_table "reviews", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "order_id", null: false
+    t.string "reviewable_type", null: false
+    t.bigint "reviewable_id", null: false
+    t.integer "rating", null: false
+    t.text "body"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["order_id", "reviewable_type", "reviewable_id"], name: "index_reviews_on_order_and_reviewable", unique: true
+    t.index ["order_id"], name: "index_reviews_on_order_id"
+    t.index ["reviewable_type", "reviewable_id"], name: "index_reviews_on_reviewable_type_and_reviewable_id"
+    t.index ["user_id"], name: "index_reviews_on_user_id"
+    t.check_constraint "rating >= 1 AND rating <= 5", name: "reviews_rating_in_range"
+  end
+
   create_table "sessions", force: :cascade do |t|
     t.bigint "user_id"
     t.string "ip_address"
@@ -197,6 +241,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_14_081500) do
     t.check_constraint "role::text = ANY (ARRAY['customer'::character varying, 'staff'::character varying, 'driver'::character varying]::text[])", name: "users_role_check"
   end
 
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "cart_items", "carts"
   add_foreign_key "cart_items", "menu_items"
   add_foreign_key "carts", "users"
@@ -213,6 +259,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_14_081500) do
   add_foreign_key "orders", "users"
   add_foreign_key "orders", "users", column: "created_by_id"
   add_foreign_key "orders", "users", column: "driver_id"
+  add_foreign_key "reviews", "orders"
+  add_foreign_key "reviews", "users"
   add_foreign_key "sessions", "admins"
   add_foreign_key "sessions", "users"
   add_foreign_key "users", "restaurants"

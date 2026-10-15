@@ -23,10 +23,13 @@
     <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
   </head>
 
-  <body>
-    <header class="border-b border-stone-200 bg-white">
-      <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <%= link_to "Foodcourt", root_path, class: "text-xl font-bold text-stone-900" %>
+  <body class="min-h-screen bg-stone-50 text-stone-950 antialiased">
+    <header class="sticky top-0 z-40 border-b border-stone-200 bg-white/95 backdrop-blur">
+      <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
+        <%= link_to root_path, class: "flex items-center gap-2 text-xl font-extrabold tracking-tight text-stone-950" do %>
+          <span class="flex size-8 items-center justify-center rounded-xl bg-stone-950 text-sm text-white" aria-hidden="true">F</span>
+          Foodcourt
+        <% end %>
         <% if Current.account&.staff? %>
           <nav class="flex items-center gap-5 text-sm font-medium text-stone-700" aria-label="Staff navigation">
             <%= link_to "Dashboard", staff_dashboard_path %>
@@ -45,27 +48,38 @@
             <%= button_to "Sign out", session_path, method: :delete, class: "text-stone-700" %>
           </nav>
         <% elsif Current.account&.customer? %>
-          <nav class="flex items-center gap-5 text-sm font-medium text-stone-700" aria-label="Customer navigation">
-            <%= link_to "Restaurants", restaurants_path %>
-            <%= link_to "Basket", cart_path %>
-            <%= link_to "My orders", orders_path %>
+          <nav class="flex items-center gap-2 text-sm font-medium text-stone-700 sm:gap-5" aria-label="Customer navigation">
+            <%= link_to "Restaurants", restaurants_path, class: "hidden hover:text-stone-950 sm:inline" %>
+            <%= link_to "Basket", cart_path, class: "rounded-full border border-stone-300 px-3 py-2 hover:border-stone-950 hover:text-stone-950" %>
+            <%= link_to "My orders", orders_path, class: "hidden hover:text-stone-950 sm:inline" %>
             <%= button_to "Sign out", session_path, method: :delete, class: "text-stone-700" %>
           </nav>
         <% else %>
-          <nav class="flex items-center gap-5 text-sm font-medium text-stone-700" aria-label="Account navigation">
-            <%= link_to "Restaurants", restaurants_path %>
-            <%= link_to "Basket", cart_path %>
-            <%= link_to "Sign in", new_session_path %>
-            <%= link_to "Create account", new_registration_path, class: "rounded-lg bg-orange-600 px-3 py-2 text-white" %>
+          <nav class="flex items-center gap-2 text-sm font-medium text-stone-700 sm:gap-5" aria-label="Account navigation">
+            <%= link_to "Restaurants", restaurants_path, class: "hidden hover:text-stone-950 sm:inline" %>
+            <%= link_to "Basket", cart_path, class: "rounded-full border border-stone-300 px-3 py-2 hover:border-stone-950 hover:text-stone-950" %>
+            <%= link_to "Sign in", new_session_path, class: "hidden hover:text-stone-950 sm:inline" %>
+            <%= link_to "Create account", new_registration_path, class: "rounded-full bg-stone-950 px-4 py-2.5 font-semibold text-white hover:bg-stone-700" %>
           </nav>
         <% end %>
       </div>
     </header>
-    <main class="mx-auto max-w-7xl px-6 py-8">
+    <main class="mx-auto max-w-7xl px-4 py-6 pb-24 sm:px-6 sm:py-10">
       <% flash.each do |type, message| %>
         <p class="mb-5 rounded-lg px-4 py-3 <%= type == "alert" ? "bg-red-50 text-red-800" : "bg-green-50 text-green-800" %>" role="<%= type == "alert" ? "alert" : "status" %>"><%= message %></p>
       <% end %>
       <%= yield %>
     </main>
+    <% if Current.account.nil? || Current.account.is_a?(User) && Current.account.customer? %>
+      <nav class="fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-t border-stone-200 bg-white/95 px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] text-center text-xs font-semibold text-stone-600 backdrop-blur sm:hidden" aria-label="Customer quick navigation">
+        <%= link_to restaurants_path, class: "flex flex-col items-center gap-1 py-1 hover:text-stone-950" do %><span aria-hidden="true">⌂</span>Browse<% end %>
+        <%= link_to cart_path, class: "flex flex-col items-center gap-1 py-1 hover:text-stone-950" do %><span aria-hidden="true">▢</span>Basket<% end %>
+        <% if Current.account.is_a?(User) && Current.account.customer? %>
+          <%= link_to orders_path, class: "flex flex-col items-center gap-1 py-1 hover:text-stone-950" do %><span aria-hidden="true">◷</span>Orders<% end %>
+        <% else %>
+          <%= link_to new_session_path, class: "flex flex-col items-center gap-1 py-1 hover:text-stone-950" do %><span aria-hidden="true">◷</span>Sign in<% end %>
+        <% end %>
+      </nav>
+    <% end %>
   </body>
 </html>

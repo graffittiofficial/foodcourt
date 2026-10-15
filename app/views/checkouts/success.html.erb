@@ -1,21 +1,42 @@
 <% content_for :title, "Order confirmation | Foodcourt" %>
-<h1 class="text-3xl font-bold text-stone-900">Payment confirmation</h1>
-<% if @checkout.pending? %>
-  <p class="mt-3 rounded-lg bg-amber-50 p-4 text-amber-900" role="status">Your payment is being confirmed. This page will show your restaurant orders once confirmation arrives.</p>
-<% elsif @checkout.expired? %>
-  <p class="mt-3 rounded-lg bg-red-50 p-4 text-red-800" role="alert">This checkout expired before payment was completed. Your basket is still available.</p>
-  <%= link_to "Return to your basket", cart_path, class: "mt-5 inline-block font-semibold text-orange-700 underline" %>
-<% else %>
-  <p class="mt-3 text-stone-600">Your payment was received. Each restaurant is preparing its own order for delivery.</p>
-  <ul class="mt-6 space-y-4">
-    <% @checkout.checkout_groups.each do |group| %>
-      <% if group.order %>
-        <li class="rounded-xl border border-stone-200 bg-white p-5">
-          <h2 class="font-bold text-stone-900"><%= group.restaurant.name %></h2>
-          <%= link_to "Track order ##{group.order.id}", order_path(group.order), class: "mt-2 inline-block font-semibold text-orange-700 underline" %>
-        </li>
-      <% end %>
+<section class="mx-auto max-w-3xl overflow-hidden rounded-3xl border border-stone-200 bg-white">
+  <div class="border-b border-stone-100 p-6 sm:p-8">
+    <% if @checkout.pending? %>
+      <span class="flex size-12 items-center justify-center rounded-full bg-stone-100 text-xl text-stone-700" aria-hidden="true">…</span>
+      <p class="mt-5 text-sm font-semibold uppercase tracking-[0.16em] text-stone-500">Payment update</p>
+      <h1 class="mt-2 text-3xl font-bold tracking-tight text-stone-950">Confirming your payment</h1>
+      <p class="mt-3 text-stone-600">Your payment is being confirmed. Refresh this page in a moment to see the restaurant orders.</p>
+      <%= link_to "Refresh order status", checkout_success_path(session_id: @checkout.stripe_checkout_session_id), class: "mt-6 inline-flex rounded-full bg-stone-950 px-5 py-3 font-semibold text-white hover:bg-stone-700" %>
+    <% elsif @checkout.expired? %>
+      <span class="flex size-12 items-center justify-center rounded-full bg-red-50 text-xl text-red-700" aria-hidden="true">!</span>
+      <p class="mt-5 text-sm font-semibold uppercase tracking-[0.16em] text-stone-500">Checkout ended</p>
+      <h1 class="mt-2 text-3xl font-bold tracking-tight text-stone-950">Payment wasn’t completed</h1>
+      <p class="mt-3 text-stone-600">This checkout expired before payment was completed. Your basket is still available.</p>
+      <%= link_to "Return to your basket", cart_path, class: "mt-6 inline-flex rounded-full bg-stone-950 px-5 py-3 font-semibold text-white hover:bg-stone-700" %>
+    <% else %>
+      <span class="flex size-12 items-center justify-center rounded-full bg-stone-950 text-xl text-white" aria-hidden="true">✓</span>
+      <p class="mt-5 text-sm font-semibold uppercase tracking-[0.16em] text-stone-500">Payment received</p>
+      <h1 class="mt-2 text-3xl font-bold tracking-tight text-stone-950">Your order is on its way</h1>
+      <p class="mt-3 text-stone-600">Each restaurant is preparing its own order for delivery.</p>
     <% end %>
-  </ul>
-  <%= link_to "View all orders", orders_path, class: "mt-6 inline-block rounded-lg bg-orange-600 px-4 py-2.5 font-semibold text-white" %>
-<% end %>
+  </div>
+
+  <% if @checkout.paid? %>
+    <ul class="divide-y divide-stone-100">
+      <% @checkout.checkout_groups.each do |group| %>
+        <% if group.order %>
+          <li class="flex flex-wrap items-center justify-between gap-4 p-5 sm:p-6">
+            <div>
+              <h2 class="font-bold text-stone-950"><%= group.restaurant.name %></h2>
+              <p class="mt-1 text-sm text-stone-500">Order #<%= group.order.id %></p>
+            </div>
+            <%= link_to "Track order", order_path(group.order), class: "rounded-full border border-stone-300 px-5 py-2.5 text-sm font-semibold text-stone-950 hover:bg-stone-100" %>
+          </li>
+        <% end %>
+      <% end %>
+    </ul>
+    <div class="border-t border-stone-100 p-6 sm:p-8">
+      <%= link_to "View all orders", orders_path, class: "inline-flex rounded-full bg-stone-950 px-5 py-3 font-semibold text-white hover:bg-stone-700" %>
+    </div>
+  <% end %>
+</section>

@@ -9,7 +9,9 @@ class HomeController < ApplicationController
     elsif Current.account&.driver?
       redirect_to driver_root_path
     else
-      @restaurants = Restaurant.includes(:menu_items).order(:name)
+      @query = params[:q].to_s.strip
+      @restaurants = Restaurant.includes(:reviews, :photo_attachment, menu_items: [ :photo_attachment ]).order(:name)
+      @restaurants = @restaurants.where("restaurants.name ILIKE ?", "%#{Restaurant.sanitize_sql_like(@query)}%") if @query.present?
     end
   end
 end

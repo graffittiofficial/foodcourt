@@ -1,11 +1,23 @@
 <% content_for :title, "Foodcourt | Order from local restaurants" %>
-<div class="mb-10 flex flex-wrap items-end justify-between gap-4">
-  <div>
-    <p class="text-sm font-semibold uppercase tracking-wide text-orange-700">Good food, all in one place</p>
-    <h1 class="mt-2 text-4xl font-bold text-stone-900">Choose a restaurant</h1>
-    <p class="mt-3 max-w-2xl text-stone-600">Browse menus from local restaurants and build one basket for delivery.</p>
+<section class="mb-10 overflow-hidden rounded-[2rem] bg-stone-950 px-6 py-10 text-white sm:px-10 sm:py-14">
+  <div class="max-w-3xl">
+    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-stone-300">Good food, all in one place</p>
+    <h1 class="mt-3 text-4xl font-extrabold leading-tight tracking-tight sm:text-6xl">A great meal is closer than you think.</h1>
+    <p class="mt-4 max-w-xl text-base text-stone-300 sm:text-lg">Discover local restaurants, explore their menus, and get your favorites delivered.</p>
+    <%= form_with url: root_path, method: :get, class: "mt-7 flex max-w-xl gap-2 rounded-full bg-white p-1.5" do |form| %>
+      <%= form.search_field :q, value: @query, placeholder: "Search restaurants", aria: { label: "Search restaurants" }, class: "min-w-0 flex-1 rounded-full border-0 bg-transparent px-4 py-3 text-stone-950 placeholder:text-stone-400 focus:outline-none focus:ring-0" %>
+      <%= form.submit "Find food", class: "rounded-full bg-stone-950 px-5 py-3 font-semibold text-white hover:bg-stone-700" %>
+    <% end %>
   </div>
-  <%= link_to "View basket", cart_path, class: "rounded-lg bg-orange-600 px-4 py-2.5 font-semibold text-white hover:bg-orange-700" %>
-</div>
+</section>
 
-<%= render "restaurants/list", restaurants: @restaurants %>
+<section>
+  <div class="mb-5 flex items-end justify-between gap-4">
+    <div>
+      <p class="text-sm font-semibold uppercase tracking-[0.16em] text-stone-500">Explore</p>
+      <h2 class="mt-1 text-2xl font-bold tracking-tight text-stone-950 sm:text-3xl"><%= @query.present? ? "Search results" : "Restaurants to explore" %></h2>
+    </div>
+    <%= link_to "View all", restaurants_path, class: "text-sm font-semibold text-stone-700 hover:text-stone-950" %>
+  </div>
+  <%= render "restaurants/list", restaurants: @restaurants %>
+</section>

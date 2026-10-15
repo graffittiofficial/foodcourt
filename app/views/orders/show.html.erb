@@ -1,31 +1,81 @@
 <% content_for :title, "Order ##{@order.id} | Foodcourt" %>
 <div class="mb-6">
-  <%= link_to "Your orders", orders_path, class: "text-sm font-semibold text-orange-700 underline" %>
-  <h1 class="mt-2 text-3xl font-bold text-stone-900"><%= @order.restaurant.name %> · Order #<%= @order.id %></h1>
-  <p class="mt-2 text-stone-600">Kitchen: <%= @order.status.humanize %></p>
+  <%= link_to "← Your orders", orders_path, class: "text-sm font-semibold text-stone-500 hover:text-stone-950" %>
 </div>
 
-<section class="max-w-3xl rounded-xl border border-stone-200 bg-white p-6">
-  <h2 class="text-xl font-bold text-stone-900">Delivery progress</h2>
-  <ol class="mt-4 grid gap-3 sm:grid-cols-3">
-    <% current_delivery_step = %w[unassigned assigned picked_up delivered].index(@order.delivery_status) %>
-    <% [["assigned", "Driver assigned"], ["picked_up", "Picked up"], ["delivered", "Delivered"]].each_with_index do |(_status, label), index| %>
-      <li class="rounded-lg p-3 <%= current_delivery_step > index ? "bg-emerald-50 font-semibold text-emerald-900" : "bg-stone-100 text-stone-500" %>"><%= label %></li>
+<section class="overflow-hidden rounded-3xl border border-stone-200 bg-white">
+  <div class="flex flex-wrap items-center gap-4 border-b border-stone-100 p-6 sm:p-8">
+    <% if @order.restaurant.photo.attached? %>
+      <%= image_tag @order.restaurant.photo, class: "size-20 rounded-2xl object-cover", alt: @order.restaurant.name %>
+    <% else %>
+      <div class="flex size-20 shrink-0 items-center justify-center rounded-2xl bg-stone-100 text-3xl font-bold text-stone-300"><%= @order.restaurant.name.first(1).upcase %></div>
     <% end %>
-  </ol>
-  <% if @order.driver %><p class="mt-4 text-sm text-stone-600">Your driver: <%= @order.driver.name %></p><% end %>
-  <p class="mt-2 text-sm text-stone-600">Delivering to: <%= @order.checkout_group.checkout.address_line1 %>, <%= @order.checkout_group.checkout.city %> <%= @order.checkout_group.checkout.postal_code %></p>
+    <div class="min-w-0 flex-1">
+      <p class="text-sm text-stone-500">Order #<%= @order.id %></p>
+      <h1 class="mt-1 text-2xl font-bold tracking-tight text-stone-950"><%= @order.restaurant.name %></h1>
+      <p class="mt-1 text-sm text-stone-600">Kitchen: <%= @order.status.humanize %></p>
+    </div>
+    <span class="rounded-full bg-stone-100 px-4 py-2 text-sm font-semibold text-stone-800"><%= @order.delivery_status.humanize %></span>
+  </div>
+
+  <div class="p-6 sm:p-8">
+    <h2 class="text-lg font-bold text-stone-950">Delivery progress</h2>
+    <% delivery_steps = [["assigned", "Driver assigned"], ["picked_up", "Picked up"], ["delivered", "Delivered"]] %>
+    <% current_delivery_step = %w[unassigned assigned picked_up delivered].index(@order.delivery_status) %>
+    <ol class="mt-5 grid gap-4 sm:grid-cols-3" aria-label="Delivery progress">
+      <% delivery_steps.each_with_index do |(status, label), index| %>
+        <% complete = current_delivery_step > index %>
+        <li class="flex items-center gap-3 text-sm <%= complete ? "font-semibold text-stone-950" : "text-stone-400" %>">
+          <span class="flex size-8 shrink-0 items-center justify-center rounded-full <%= complete ? "bg-stone-950 text-white" : "border border-stone-300" %>" aria-hidden="true"><%= complete ? "✓" : index + 1 %></span>
+          <span><%= label %></span>
+        </li>
+      <% end %>
+    </ol>
+    <% if @order.driver %><p class="mt-5 text-sm text-stone-600">Your driver: <span class="font-semibold text-stone-900"><%= @order.driver.name %></span></p><% end %>
+    <% if @order.checkout_group&.checkout %>
+      <p class="mt-2 text-sm text-stone-600">Delivering to: <%= @order.checkout_group.checkout.address_line1 %>, <%= @order.checkout_group.checkout.city %> <%= @order.checkout_group.checkout.postal_code %></p>
+    <% end %>
+  </div>
 </section>
 
-<section class="mt-6 max-w-3xl rounded-xl border border-stone-200 bg-white p-6">
-  <h2 class="text-xl font-bold text-stone-900">Items</h2>
-  <ul class="mt-4 divide-y divide-stone-200">
-    <% @order.order_items.includes(:menu_item).each do |item| %>
-      <li class="flex justify-between gap-4 py-3">
-        <span><%= item.quantity %> × <%= item.menu_item_name %></span>
-        <span><%= number_to_currency(item.unit_price * item.quantity) %></span>
-      </li>
-    <% end %>
-  </ul>
-  <p class="mt-4 flex justify-between border-t border-stone-200 pt-4 font-bold"><span>Order total including delivery</span><span><%= number_to_currency(@order.total) %></span></p>
+<section class="mt-5 overflow-hidden rounded-3xl border border-stone-200 bg-white">
+  <div class="border-b border-stone-100 p-6 sm:p-8">
+    <h2 class="text-xl font-bold text-stone-950">Your order</h2>
+    <ul class="mt-5 divide-y divide-stone-100">
+      <% @order.order_items.each do |item| %>
+        <li class="flex items-center justify-between gap-4 py-4">
+          <div class="flex items-center gap-3">
+            <% if item.menu_item.photo.attached? %>
+              <%= image_tag item.menu_item.photo, class: "size-14 rounded-xl object-cover", alt: item.menu_item_name %>
+            <% else %>
+              <div class="flex size-14 items-center justify-center rounded-xl bg-stone-100 font-bold text-stone-300"><%= item.menu_item_name.first(1).upcase %></div>
+            <% end %>
+            <span class="text-sm text-stone-700"><span class="font-semibold text-stone-950"><%= item.quantity %> × <%= item.menu_item_name %></span></span>
+          </div>
+          <span class="text-sm font-semibold text-stone-950"><%= number_to_currency(item.unit_price * item.quantity) %></span>
+        </li>
+      <% end %>
+    </ul>
+    <p class="mt-4 flex justify-between border-t border-stone-200 pt-4 font-bold text-stone-950"><span>Total including delivery</span><span><%= number_to_currency(@order.total) %></span></p>
+  </div>
 </section>
+
+<% if @order.delivery_status == "delivered" %>
+  <section class="mt-5 rounded-3xl border border-stone-200 bg-white p-6 sm:p-8">
+    <p class="text-sm font-semibold uppercase tracking-[0.16em] text-stone-500">Your feedback</p>
+    <h2 class="mt-2 text-2xl font-bold tracking-tight text-stone-950">How was your order?</h2>
+    <p class="mt-2 text-sm text-stone-600">Your ratings help other customers choose. They’re published right away.</p>
+
+    <div class="mt-6 border-t border-stone-100 pt-6">
+      <h3 class="font-bold text-stone-950">Rate <%= @order.restaurant.name %></h3>
+      <%= render "reviews/form", order: @order, review: @restaurant_review, reviewable_type: "Restaurant", menu_item_id: nil %>
+    </div>
+
+    <% @order.order_items.each do |item| %>
+      <div class="mt-6 border-t border-stone-100 pt-6">
+        <h3 class="font-bold text-stone-950">Rate <%= item.menu_item_name %></h3>
+        <%= render "reviews/form", order: @order, review: @menu_item_reviews[item.menu_item_id], reviewable_type: "MenuItem", menu_item_id: item.menu_item_id %>
+      </div>
+    <% end %>
+  </section>
+<% end %>

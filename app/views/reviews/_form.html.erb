@@ -1,0 +1,25 @@
+<% review_form = review || Review.new(rating: 5) %>
+<% persisted = review_form.persisted? %>
+<%= form_with scope: :review, url: persisted ? review_path(review_form) : order_reviews_path(order), method: persisted ? :patch : :post, class: "mt-4 space-y-4" do |form| %>
+  <%= form.hidden_field :reviewable_type, value: reviewable_type %>
+  <% if menu_item_id %><%= form.hidden_field :menu_item_id, value: menu_item_id %><% end %>
+  <fieldset>
+    <legend class="mb-2 text-sm font-medium text-stone-700">Your rating</legend>
+    <div class="flex gap-2">
+      <% 1.upto(5) do |rating| %>
+        <label class="cursor-pointer" aria-label="<%= rating %> stars">
+          <%= form.radio_button :rating, rating, checked: review_form.rating.to_i == rating, class: "peer sr-only" %>
+          <span class="flex size-10 items-center justify-center rounded-full border border-stone-300 text-lg text-stone-400 transition hover:border-stone-950 hover:text-amber-500 peer-checked:border-stone-950 peer-checked:bg-stone-950 peer-checked:text-amber-400 peer-focus-visible:ring-2 peer-focus-visible:ring-stone-400" aria-label="<%= rating %> stars">★</span>
+        </label>
+      <% end %>
+    </div>
+  </fieldset>
+  <div>
+    <%= form.label :body, "Add a comment (optional)", class: "mb-1.5 block text-sm font-medium text-stone-700" %>
+    <%= form.text_area :body, value: review_form.body, rows: 3, maxlength: 1000, class: "w-full rounded-xl border border-stone-300 px-4 py-3 focus:border-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-200" %>
+  </div>
+  <%= form.submit persisted ? "Update rating" : "Publish rating", class: "rounded-full bg-stone-950 px-5 py-2.5 text-sm font-semibold text-white hover:bg-stone-700" %>
+<% end %>
+<% if persisted %>
+  <%= button_to "Delete rating", review_path(review_form), method: :delete, class: "mt-3 rounded-full border border-stone-300 px-5 py-2.5 text-sm font-semibold text-stone-700 hover:bg-stone-100", form: { data: { turbo_confirm: "Delete your rating?" } } %>
+<% end %>

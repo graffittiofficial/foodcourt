@@ -19,6 +19,7 @@ class Order < ApplicationRecord
   belongs_to :driver, class_name: "User", optional: true
   belongs_to :checkout_group, optional: true
   has_many :order_items, dependent: :destroy
+  has_many :reviews, dependent: :destroy
 
   enum :status, STATUSES, default: :pending, validate: true
   enum :delivery_status, {

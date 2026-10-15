@@ -8,9 +8,11 @@ Rails.application.routes.draw do
     resources :restaurants, only: %i[index new create edit update] do
       post :connect, on: :member
       get :connect, on: :member
+      resources :menu_items, only: %i[edit update]
     end
     resources :orders, only: %i[index update]
     resources :drivers, only: %i[index new create]
+    resources :reviews, only: %i[index destroy]
   end
 
   namespace :driver do
@@ -41,7 +43,10 @@ Rails.application.routes.draw do
   get "checkouts/new", to: "checkouts#new", as: :new_checkout
   post "checkouts", to: "checkouts#create", as: :checkouts
   get "checkouts/success", to: "checkouts#success", as: :checkout_success
-  resources :orders, only: %i[index show]
+  resources :orders, only: %i[index show] do
+    resources :reviews, only: :create
+  end
+  resources :reviews, only: %i[update destroy]
   post "webhooks/stripe", to: "stripe_webhooks#create", as: :stripe_webhook
 
   root "home#show"

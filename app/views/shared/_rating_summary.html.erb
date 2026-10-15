@@ -1,0 +1,9 @@
+<% if record.rating_average %>
+  <span class="inline-flex items-center gap-1 text-sm font-semibold text-stone-800" aria-label="Rated <%= record.rating_average %> out of 5 from <%= record.rating_count %> reviews">
+    <span class="text-amber-500" aria-hidden="true">★</span>
+    <%= number_with_precision(record.rating_average, precision: 1) %>
+    <span class="font-normal text-stone-500">(<%= record.rating_count %>)</span>
+  </span>
+<% else %>
+  <span class="text-xs text-stone-500">No ratings yet</span>
+<% end %>

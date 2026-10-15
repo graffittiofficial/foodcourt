@@ -8,3 +8,32 @@
   <% end %>
 </div>
 <%= render "form", restaurant: @restaurant %>
+
+<section class="mt-10 max-w-3xl">
+  <div class="mb-4">
+    <h2 class="text-2xl font-bold text-stone-950">Menu photos</h2>
+    <p class="mt-1 text-sm text-stone-600">Add one photo to each menu item so customers can preview dishes.</p>
+  </div>
+  <% if @menu_items.empty? %>
+    <p class="rounded-2xl border border-dashed border-stone-300 p-6 text-stone-600">Menu items will appear here once they’ve been added.</p>
+  <% else %>
+    <ul class="divide-y divide-stone-200 overflow-hidden rounded-2xl border border-stone-200 bg-white">
+      <% @menu_items.each do |menu_item| %>
+        <li class="flex items-center justify-between gap-4 p-4">
+          <div class="flex min-w-0 items-center gap-3">
+            <% if menu_item.photo.attached? %>
+              <%= image_tag menu_item.photo, class: "size-14 rounded-xl object-cover", alt: menu_item.name %>
+            <% else %>
+              <div class="flex size-14 items-center justify-center rounded-xl bg-stone-100 text-xl font-bold text-stone-300"><%= menu_item.name.first(1).upcase %></div>
+            <% end %>
+            <div class="min-w-0">
+              <p class="truncate font-semibold text-stone-950"><%= menu_item.name %></p>
+              <p class="text-sm text-stone-500"><%= menu_item.photo.attached? ? "Photo uploaded" : "No photo yet" %></p>
+            </div>
+          </div>
+          <%= link_to menu_item.photo.attached? ? "Replace photo" : "Add photo", edit_admin_restaurant_menu_item_path(@restaurant, menu_item), class: "shrink-0 rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-900 hover:bg-stone-100" %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</section>

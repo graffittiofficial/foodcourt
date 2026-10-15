@@ -10,7 +10,7 @@ class ShoppingBasket
     synchronize_guest_items if user
 
     persisted_entries = if user&.cart
-      user.cart.cart_items.includes(:menu_item).map do |item|
+      user.cart.cart_items.includes(menu_item: :photo_attachment).map do |item|
         Entry.new(menu_item: item.menu_item, item_id: item.menu_item_id, quantity: item.quantity, available: item.menu_item.available? && item.menu_item.archived_at.nil?)
       end
     else
@@ -18,7 +18,7 @@ class ShoppingBasket
     end
 
     guest_entries = basket_hash.filter_map do |item_id, quantity|
-      menu_item = MenuItem.find_by(id: item_id)
+      menu_item = MenuItem.with_attached_photo.find_by(id: item_id)
       Entry.new(
         menu_item: menu_item,
         item_id: item_id.to_i,
