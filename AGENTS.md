@@ -20,8 +20,8 @@
 
 ### 2. 使用共享语言
 
-- 项目中维护 `CONTEXT.md` 作为领域词汇表
-- 代码中使用的术语必须与 `CONTEXT.md` 一致
+- 项目中维护 `GLOSSARY.md` 作为领域词汇表
+- 代码中使用的术语必须与 `GLOSSARY.md` 一致
 - 发现模糊或冲突的术语时，立即指出并澄清
 - `docs/adr/` 目录存放重要架构决策记录
 
@@ -44,7 +44,7 @@
 - 定期检查模块是否"浅"（接口和实现几乎一样复杂）
 - 寻找深化机会：小接口背后封装大功能
 - 应用"删除测试"：删了这个模块，复杂度会消失还是扩散？
-- 使用 `CONTEXT.md` 的术语命名模块
+- 使用 `GLOSSARY.md` 的术语命名模块
 
 ### 6. 文档化
 
@@ -94,8 +94,8 @@
 
 ```
 /
-├── CONTEXT.md              # 领域词汇表（核心，必须）
-├── CONTEXT-MAP.md          # 多上下文时使用
+├── GLOSSARY.md             # 领域词汇表
+├── GLOSSARY-MAP.md         # 多上下文时使用
 ├── AGENTS.md               # 本文件
 ├── docs/
 │   ├── adr/                # 架构决策记录
@@ -111,10 +111,14 @@
 
 ## Agent skills
 
-This repository is configured for the Matt Pocock skills workflow using GitHub issues and canonical triage labels.
+### Issue tracker
 
-- Issue tracker: GitHub (`gh` CLI)
-- Labels: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`
-- Domain docs: root `CONTEXT.md` plus `docs/adr/` decisions
+Issues and specs live in this repository's GitHub Issues. Use the `gh` CLI. See `docs/agents/issue-tracker.md`.
 
-See the project-specific configuration files in `docs/agents/`.
+### Triage labels
+
+Use the five canonical labels: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, and `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+This is a single-context repository; use the root `GLOSSARY.md` and `docs/adr/`. See `docs/agents/domain.md`.
