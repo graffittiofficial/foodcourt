@@ -29,10 +29,14 @@ if Rails.env.development?
     }
   ]
 
+  demo_organization = Organization.find_or_create_by!(name: "Foodcourt Demo Organization")
+
   seeded_restaurants = restaurant_data.to_h do |attributes|
     restaurant = Restaurant.find_or_create_by!(name: attributes[:name]) do |record|
+      record.organization = demo_organization
       record.description = attributes[:description]
     end
+    restaurant.update!(organization: demo_organization) unless restaurant.organization_id == demo_organization.id
 
     menu_items = attributes[:menu_items].map do |item_attributes|
       MenuItem.find_or_create_by!(restaurant: restaurant, name: item_attributes[:name]) do |item|
@@ -53,12 +57,18 @@ if Rails.env.development?
     admin.password = "password"
   end
 
+  organization_admin = User.find_or_create_by!(email_address: "demo.orgadmin@example.test") do |user|
+    user.password = "password"
+    user.role = :customer
+  end
+  OrganizationMembership.find_or_create_by!(organization: demo_organization, user: organization_admin)
+
   staff_restaurant = seeded_restaurants.fetch("The Corner Table").fetch(:restaurant)
   staff = User.find_or_create_by!(email_address: "demo.staff@example.test") do |user|
     user.password = "password"
-    user.role = :staff
-    user.restaurant = staff_restaurant
+    user.role = :customer
   end
+  RestaurantMembership.find_or_create_by!(user: staff, restaurant: staff_restaurant)
 
   sample_orders = [
     {

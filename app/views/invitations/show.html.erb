@@ -1,0 +1,16 @@
+<% content_for :title, "Accept invitation | Foodcourt" %>
+<h1 class="mb-2 text-3xl font-bold">Accept your invitation</h1>
+<p class="mb-6 text-stone-600">You’re invited to <%= @invitation.role.humanize %> for <%= @invitation.organization.name %>.</p>
+<% if @user&.errors&.any? %><div class="mb-4 max-w-xl rounded-lg bg-red-50 p-4 text-red-800" role="alert"><%= @user.errors.full_messages.to_sentence %></div><% end %>
+<% if @existing_user %>
+  <p class="mb-4">Signed in as <strong><%= @existing_user.email_address %></strong>.</p>
+  <%= button_to "Accept invitation", accept_invitation_path(token: params[:token]), method: :post, class: "rounded-lg bg-stone-950 px-4 py-2 font-semibold text-white" %>
+<% else %>
+  <%= form_with url: accept_invitation_path(token: params[:token]), scope: :user, class: "max-w-xl space-y-4 rounded-xl border border-stone-200 bg-white p-6" do |form| %>
+    <p class="text-sm text-stone-600">Invitation for <strong><%= @invitation.email_address %></strong></p>
+    <div><%= form.label :name, class: "mb-1 block font-semibold" %><%= form.text_field :name, required: true, class: "w-full rounded-lg border border-stone-300 px-3 py-2" %></div>
+    <div><%= form.label :password, class: "mb-1 block font-semibold" %><%= form.password_field :password, required: true, class: "w-full rounded-lg border border-stone-300 px-3 py-2" %></div>
+    <div><%= form.label :password_confirmation, class: "mb-1 block font-semibold" %><%= form.password_field :password_confirmation, required: true, class: "w-full rounded-lg border border-stone-300 px-3 py-2" %></div>
+    <%= form.submit "Create account and accept", class: "rounded-lg bg-stone-950 px-4 py-2 font-semibold text-white" %>
+  <% end %>
+<% end %>

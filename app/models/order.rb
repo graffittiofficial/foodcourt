@@ -84,9 +84,9 @@ class Order < ApplicationRecord
 
   def created_by_is_staff_for_restaurant
     return unless created_by
-    return if created_by.staff? && created_by.restaurant_id == restaurant_id
+    return if created_by.staff_for?(restaurant) || created_by.organization_admin_for?(restaurant.organization)
 
-    errors.add(:created_by, "must be staff for this restaurant")
+    errors.add(:created_by, "must have management access to this restaurant")
   end
 
   def status_transition_is_allowed

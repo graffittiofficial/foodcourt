@@ -1,0 +1,11 @@
+<% content_for :title, "Choose an Organization | Foodcourt" %>
+<h1 class="mb-2 text-3xl font-bold">Choose an Organization</h1>
+<p class="mb-6 text-stone-600">Select an Organization to manage its Restaurants.</p>
+<ul class="space-y-3">
+  <% @organizations.each do |organization| %>
+    <li class="flex items-center justify-between rounded-xl border border-stone-200 bg-white p-5">
+      <h2 class="font-semibold"><%= organization.name %></h2>
+      <%= button_to "Open", switch_organizations_path, method: :patch, params: { organization_id: organization.id }, class: "rounded-lg bg-stone-950 px-4 py-2 font-semibold text-white" %>
+    </li>
+  <% end %>
+</ul>

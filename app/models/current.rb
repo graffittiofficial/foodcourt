@@ -1,5 +1,5 @@
 class Current < ActiveSupport::CurrentAttributes
-  attribute :session
+  attribute :session, :organization, :restaurant
 
   def account
     session&.account

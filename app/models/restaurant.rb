@@ -1,5 +1,7 @@
 class Restaurant < ApplicationRecord
-  has_many :users, dependent: :restrict_with_error
+  belongs_to :organization
+  has_many :restaurant_memberships, dependent: :destroy
+  has_many :staff_users, through: :restaurant_memberships, source: :user
   has_many :menu_items, dependent: :destroy
   has_many :orders, dependent: :restrict_with_error
   has_many :checkout_groups, dependent: :restrict_with_error

@@ -2,27 +2,24 @@ require "test_helper"
 
 class StaffDashboardModelsTest < ActiveSupport::TestCase
   setup do
-    @restaurant = Restaurant.create!(name: "Bistro")
-    @staff = User.create!(
-      email_address: "staff@example.com",
-      password: "password",
-      role: :staff,
-      restaurant: @restaurant
-    )
+    @restaurant = create_restaurant(name: "Bistro")
+    @staff = create_staff(email_address: "staff@example.com", restaurants: [ @restaurant ])
   end
 
-  test "staff users must belong to a restaurant" do
-    staff_user = User.new(email_address: "orphan@example.com", password: "password", role: :staff)
+  test "staff capability comes from an assigned Restaurant membership" do
+    staff_user = User.create!(email_address: "orphan@example.com", password: "password")
 
-    assert_not staff_user.valid?
-    assert_includes staff_user.errors[:restaurant], "can't be blank"
+    assert_not staff_user.staff?
+    RestaurantMembership.create!(restaurant: @restaurant, user: staff_user)
+    assert staff_user.staff?
   end
 
-  test "customers cannot be assigned a restaurant" do
-    customer = User.new(email_address: "customer@example.com", password: "password", restaurant: @restaurant)
+  test "a customer can receive Restaurant access without losing customer capabilities" do
+    customer = User.create!(email_address: "customer@example.com", password: "password")
 
-    assert_not customer.valid?
-    assert_includes customer.errors[:restaurant], "must be blank"
+    RestaurantMembership.create!(restaurant: @restaurant, user: customer)
+    assert customer.customer?
+    assert customer.staff?
   end
 
   test "staff order totals use the stored unit price and quantity" do
@@ -61,16 +58,15 @@ class StaffDashboardModelsTest < ActiveSupport::TestCase
   end
 
   test "staff order creator must belong to the same restaurant" do
-    other_restaurant = Restaurant.create!(name: "Other Bistro")
+    other_restaurant = create_restaurant(name: "Other Bistro")
     order = Order.new(restaurant: @restaurant, customer_name: "Sam", created_by: User.create!(
       email_address: "other-staff@example.com",
-      password: "password",
-      role: :staff,
-      restaurant: other_restaurant
+      password: "password"
     ))
+    RestaurantMembership.create!(restaurant: other_restaurant, user: order.created_by)
 
     assert_not order.valid?
-    assert_includes order.errors[:created_by], "must be staff for this restaurant"
+    assert_includes order.errors[:created_by], "must have management access to this restaurant"
   end
 
   test "archived menu item names can be reused, but active names must be unique" do

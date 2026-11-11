@@ -3,7 +3,7 @@ require "test_helper"
 class AdminRestaurantsControllerTest < ActionDispatch::IntegrationTest
   test "incomplete Stripe onboarding does not enable online ordering" do
     admin = AdminAccount.create!(email_address: "admin@example.test", password: "password")
-    restaurant = Restaurant.create!(
+    restaurant = create_restaurant(
       name: "Corner Table",
       stripe_account_id: "acct_incomplete",
       address_line1: "1 Restaurant Way",
@@ -36,7 +36,7 @@ class AdminRestaurantsControllerTest < ActionDispatch::IntegrationTest
 
   test "admins can upload restaurant and menu item photos" do
     admin = AdminAccount.create!(email_address: "photos-admin@example.test", password: "password")
-    restaurant = Restaurant.create!(name: "Photo Test Restaurant")
+    restaurant = create_restaurant(name: "Photo Test Restaurant")
     menu_item = MenuItem.create!(restaurant: restaurant, name: "Photo Test Soup", price: "4.00")
     sign_in_as(admin)
 
@@ -62,7 +62,7 @@ class AdminRestaurantsControllerTest < ActionDispatch::IntegrationTest
   test "admins can remove publicly published customer reviews" do
     admin = AdminAccount.create!(email_address: "review-admin@example.test", password: "password")
     customer = User.create!(name: "Review Customer", email_address: "review-owner@example.test", password: "password")
-    restaurant = Restaurant.create!(name: "Reviewed Restaurant")
+    restaurant = create_restaurant(name: "Reviewed Restaurant")
     menu_item = MenuItem.create!(restaurant: restaurant, name: "Reviewed Dish", price: "8.00")
     order = Order.create!(
       restaurant: restaurant,

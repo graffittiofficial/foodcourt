@@ -11,6 +11,22 @@ module ActiveSupport
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 
-    # Add more helper methods to be used by all tests here...
+    def create_organization(name: "Test Organization")
+      Organization.create!(name: name)
+    end
+
+    def create_restaurant(name:, organization: nil, **attributes)
+      Restaurant.create!(
+        **attributes,
+        name: name,
+        organization: organization || create_organization(name: "#{name} Organization")
+      )
+    end
+
+    def create_staff(email_address:, restaurants:)
+      user = User.create!(email_address: email_address, password: "password")
+      restaurants.each { |restaurant| RestaurantMembership.create!(restaurant: restaurant, user: user) }
+      user
+    end
   end
 end

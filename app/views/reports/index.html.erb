@@ -1,0 +1,131 @@
+<% content_for :title, "Reports | Foodcourt" %>
+<div class="space-y-8">
+  <section>
+    <h1 class="text-3xl font-bold">Reports</h1>
+    <p class="mt-2 text-stone-600">Request CSV reports or manage recurring report schedules for your authorized Organization and Restaurants.</p>
+  </section>
+
+  <section class="rounded-xl border border-stone-200 bg-white p-6">
+    <h2 class="text-xl font-bold">Generate a report</h2>
+    <% if @form_error.present? %><p class="mt-3 rounded-lg bg-red-50 p-3 text-red-800" role="alert"><%= @form_error %></p><% end %>
+    <%= form_with url: reports_path, method: :post, class: "mt-4 grid gap-4 md:grid-cols-2" do |form| %>
+      <div class="md:col-span-2">
+        <%= form.label :scope, "Report scope", class: "mb-1 block font-semibold" %>
+        <%= form.select :scope, @scope_options, { selected: @selected_scope }, required: true, class: "w-full rounded-lg border border-stone-300 px-3 py-2" %>
+      </div>
+      <fieldset class="md:col-span-2">
+        <legend class="mb-2 font-semibold">Report categories</legend>
+        <div class="flex flex-wrap gap-4">
+          <% @categories.each do |key, value| %>
+            <label class="flex items-center gap-2"><%= check_box_tag "categories[]", value, true %><%= key.to_s.humanize %></label>
+          <% end %>
+        </div>
+      </fieldset>
+      <div>
+        <%= form.label :start_date, "Start date", class: "mb-1 block font-semibold" %>
+        <%= form.date_field :start_date, value: params[:start_date].presence || @default_start_date, required: true, class: "w-full rounded-lg border border-stone-300 px-3 py-2" %>
+      </div>
+      <div>
+        <%= form.label :end_date, "End date", class: "mb-1 block font-semibold" %>
+        <%= form.date_field :end_date, value: params[:end_date].presence || @default_end_date, required: true, class: "w-full rounded-lg border border-stone-300 px-3 py-2" %>
+      </div>
+      <div class="md:col-span-2">
+        <%= form.submit "Queue CSV reports", class: "cursor-pointer rounded-lg bg-stone-950 px-4 py-2 font-semibold text-white" %>
+      </div>
+    <% end %>
+  </section>
+
+  <section class="rounded-xl border border-stone-200 bg-white p-6">
+    <h2 class="text-xl font-bold">Recurring schedules</h2>
+    <%= form_with url: report_schedules_path, method: :post, class: "mt-4 grid gap-4 md:grid-cols-2", data: { controller: "report-scope" } do |form| %>
+      <div class="md:col-span-2">
+        <%= form.label :scope, "Schedule scope", class: "mb-1 block font-semibold" %>
+        <%= form.select :scope, @scope_options, { selected: @selected_scope }, required: true, class: "w-full rounded-lg border border-stone-300 px-3 py-2", data: { report_scope_target: "select", action: "change->report-scope#change" } %>
+      </div>
+      <fieldset class="md:col-span-2">
+        <legend class="mb-2 font-semibold">Report categories</legend>
+        <div class="flex flex-wrap gap-4">
+          <% @categories.each do |key, value| %>
+            <label class="flex items-center gap-2"><%= check_box_tag "categories[]", value, true %><%= key.to_s.humanize %></label>
+          <% end %>
+        </div>
+      </fieldset>
+      <div>
+        <%= form.label :cadence, class: "mb-1 block font-semibold" %>
+        <%= form.select :cadence, ReportSchedule::CADENCES.keys.map { |cadence| [ cadence.to_s.humanize, cadence ] }, {}, required: true, class: "w-full rounded-lg border border-stone-300 px-3 py-2" %>
+      </div>
+      <div>
+        <%= form.label :run_at, "Local run time", class: "mb-1 block font-semibold" %>
+        <%= form.time_field :run_at, value: "08:00", required: true, class: "w-full rounded-lg border border-stone-300 px-3 py-2" %>
+        <p class="mt-1 text-sm text-stone-600">Time zone is taken from the selected Organization.</p>
+      </div>
+      <fieldset class="md:col-span-2">
+        <legend class="mb-2 font-semibold">Email recipients</legend>
+        <p class="mb-2 text-sm text-stone-600">Recipients must currently have access to the selected scope.</p>
+        <% @recipient_options_by_scope.each do |scope, users| %>
+          <div class="grid gap-2 sm:grid-cols-2" data-report-scope-target="recipientGroup" data-scope="<%= scope %>" <%= "hidden" unless scope == @selected_scope %>>
+            <% users.each do |user| %>
+              <label class="flex items-center gap-2"><%= check_box_tag "recipient_ids[]", user.id, user.id == Current.user.id, disabled: scope != @selected_scope %><%= user.email_address %></label>
+            <% end %>
+          </div>
+        <% end %>
+      </fieldset>
+      <div class="md:col-span-2">
+        <%= form.submit "Create schedule", class: "cursor-pointer rounded-lg bg-stone-950 px-4 py-2 font-semibold text-white" %>
+      </div>
+    <% end %>
+    <% if @schedules.any? %>
+      <div class="mt-6 overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead><tr class="border-b border-stone-200"><th class="py-2 pr-4">Scope</th><th class="py-2 pr-4">Categories</th><th class="py-2 pr-4">Cadence</th><th class="py-2 pr-4">Next run</th><th class="py-2 pr-4">Status</th><th class="py-2">Actions</th></tr></thead>
+          <tbody>
+            <% @schedules.each do |schedule| %>
+              <tr class="border-b border-stone-100">
+                <td class="py-3 pr-4"><%= schedule.restaurant ? "#{schedule.organization.name} / #{schedule.restaurant.name}" : schedule.organization.name %></td>
+                <td class="py-3 pr-4"><%= schedule.categories.map { |category| category.to_s.humanize }.to_sentence %></td>
+                <td class="py-3 pr-4"><%= schedule.cadence.humanize %>, <%= schedule.run_at.strftime("%H:%M") %></td>
+                <td class="py-3 pr-4"><%= schedule.next_run_at.in_time_zone(schedule.organization.time_zone).strftime("%Y-%m-%d %H:%M %Z") %></td>
+                <td class="py-3 pr-4"><%= schedule.active? ? "Active" : "Paused" %></td>
+                <td class="py-3">
+                  <div class="flex flex-wrap gap-3">
+                    <%= link_to "Edit", edit_report_schedule_path(schedule), class: "underline" %>
+                    <% if schedule.active? %>
+                      <%= button_to "Pause", pause_report_schedule_path(schedule), method: :patch, class: "underline" %>
+                    <% else %>
+                      <%= button_to "Resume", resume_report_schedule_path(schedule), method: :patch, class: "underline" %>
+                    <% end %>
+                    <%= button_to "Delete", report_schedule_path(schedule), method: :delete, class: "text-red-700 underline", data: { turbo_confirm: "Delete this schedule?" } %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  </section>
+
+  <section class="rounded-xl border border-stone-200 bg-white p-6">
+    <h2 class="text-xl font-bold">Generated reports</h2>
+    <% if @reports.any? %>
+      <div class="mt-4 overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead><tr class="border-b border-stone-200"><th class="py-2 pr-4">Report</th><th class="py-2 pr-4">Scope</th><th class="py-2 pr-4">Date range</th><th class="py-2 pr-4">Requested</th><th class="py-2">Status</th></tr></thead>
+          <tbody>
+            <% @reports.each do |report| %>
+              <tr class="border-b border-stone-100">
+                <td class="py-3 pr-4"><%= link_to report.category.humanize, report_path(report), class: "underline" %></td>
+                <td class="py-3 pr-4"><%= report.restaurant ? "#{report.organization.name} / #{report.restaurant.name}" : report.organization.name %></td>
+                <td class="py-3 pr-4"><%= report.start_date %> – <%= report.end_date %></td>
+                <td class="py-3 pr-4"><%= l(report.created_at, format: :long) %></td>
+                <td class="py-3"><%= report.status.humanize %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <p class="mt-3 text-stone-600">No reports have been requested for your accessible scope.</p>
+    <% end %>
+  </section>
+</div>

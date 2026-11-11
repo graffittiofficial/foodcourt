@@ -9,3 +9,6 @@ application.register("hello", HelloController)
 
 import AddressAutocompleteController from "./address_autocomplete_controller"
 application.register("address-autocomplete", AddressAutocompleteController)
+
+import ReportScopeController from "./report_scope_controller"
+application.register("report-scope", ReportScopeController)

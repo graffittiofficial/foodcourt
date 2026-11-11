@@ -1,0 +1,39 @@
+<% content_for :title, "#{Current.organization.name} | Organization dashboard" %>
+<div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+  <div>
+    <p class="text-sm font-semibold uppercase tracking-wide text-emerald-700">Organization dashboard</p>
+    <h1 class="mt-1 text-3xl font-bold"><%= Current.organization.name %></h1>
+  </div>
+  <%= link_to "Add Restaurant", new_organization_admin_restaurant_path, class: "rounded-lg bg-emerald-700 px-4 py-2.5 font-semibold text-white" %>
+</div>
+<section class="grid gap-4 sm:grid-cols-3" aria-label="Organization summary">
+  <article class="rounded-xl border border-stone-200 bg-white p-5"><p class="text-sm text-stone-600">Restaurants</p><p class="mt-2 text-3xl font-bold"><%= @restaurants.count %></p></article>
+  <article class="rounded-xl border border-stone-200 bg-white p-5"><p class="text-sm text-stone-600">Orders today</p><p class="mt-2 text-3xl font-bold"><%= @today_orders_count %></p></article>
+  <article class="rounded-xl border border-stone-200 bg-white p-5"><p class="text-sm text-stone-600">Completed sales today</p><p class="mt-2 text-3xl font-bold"><%= number_to_currency(@today_revenue) %></p></article>
+</section>
+<section class="mt-10">
+  <h2 class="mb-4 text-xl font-bold">Restaurants</h2>
+  <ul class="space-y-3">
+    <% @restaurants.each do |restaurant| %>
+      <li class="flex items-center justify-between rounded-xl border border-stone-200 bg-white p-5">
+        <div><h3 class="font-semibold"><%= restaurant.name %></h3><p class="text-sm text-stone-600"><%= restaurant.orders.count %> orders</p></div>
+        <div class="flex gap-4">
+          <%= link_to "Settings", edit_organization_admin_restaurant_path(restaurant), class: "font-semibold text-emerald-800 underline" %>
+          <%= button_to "Manage operations", select_staff_restaurant_path(restaurant), method: :patch, class: "font-semibold text-emerald-800 underline" %>
+        </div>
+      </li>
+    <% end %>
+  </ul>
+</section>
+<section class="mt-10">
+  <h2 class="mb-4 text-xl font-bold">Recent orders across the Organization</h2>
+  <% if @recent_orders.empty? %>
+    <p class="rounded-xl border border-dashed border-stone-300 p-8 text-center text-stone-600">No orders yet.</p>
+  <% else %>
+    <ul class="divide-y divide-stone-200 rounded-xl border border-stone-200 bg-white">
+      <% @recent_orders.each do |order| %>
+        <li class="flex justify-between gap-4 p-4"><span><%= order.restaurant.name %> · <%= order.customer_name %></span><span><%= order.status.humanize %></span></li>
+      <% end %>
+    </ul>
+  <% end %>
+</section>

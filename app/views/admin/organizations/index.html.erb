@@ -1,0 +1,40 @@
+<% content_for :title, "Organizations | Admin" %>
+<h1 class="mb-6 text-3xl font-bold">Organizations</h1>
+<%= render "shared/search_form", url: admin_organizations_path, query: @query, placeholder: "Search organizations", preserve_params: request.query_parameters %>
+<section class="mb-8 max-w-2xl rounded-xl border border-stone-200 bg-white p-6">
+  <h2 class="mb-4 text-xl font-bold">Create Organization</h2>
+  <% if @organization.errors.any? %><div class="mb-4 rounded-lg bg-red-50 p-4 text-red-800" role="alert"><%= @organization.errors.full_messages.to_sentence %></div><% end %>
+  <%= form_with model: [:admin, @organization], class: "grid gap-4 sm:grid-cols-2" do |form| %>
+    <div><%= form.label :name, class: "mb-1 block font-semibold" %><%= form.text_field :name, required: true, class: "w-full rounded-lg border border-stone-300 px-3 py-2" %></div>
+    <div><%= label_tag "organization_admin_email_address", "First Organization admin email", class: "mb-1 block font-semibold" %><%= email_field_tag "organization[admin_email_address]", params.dig(:organization, :admin_email_address), required: true, class: "w-full rounded-lg border border-stone-300 px-3 py-2" %></div>
+    <div class="sm:col-span-2"><%= form.submit "Create and invite admin", class: "rounded-lg bg-stone-950 px-4 py-2 font-semibold text-white" %></div>
+  <% end %>
+</section>
+<h2 class="mb-4 text-xl font-bold">All Organizations</h2>
+<ul class="space-y-3">
+  <% @organizations.each do |organization| %>
+    <li id="organization-<%= organization.id %>" class="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-stone-200 bg-white p-5">
+      <div>
+        <h3 class="font-semibold"><%= organization.name %></h3>
+        <p class="text-sm text-stone-600"><%= pluralize(organization.restaurants.size, "Restaurant") %> · <%= pluralize(organization.organization_memberships.size, "admin") %></p>
+      </div>
+      <% if organization.restaurants.empty? %><%= button_to "Delete empty Organization", admin_organization_path(organization), method: :delete, class: "text-red-700 underline" %><% end %>
+    </li>
+  <% end %>
+</ul>
+<section class="mt-8">
+  <h2 class="mb-4 text-xl font-bold">Pending first-admin invitations</h2>
+  <% if @invitations.empty? %><p class="text-stone-600">No pending invitations.</p><% else %>
+    <ul class="space-y-2">
+      <% @invitations.each do |invitation| %>
+        <li class="flex items-center justify-between rounded-lg border border-stone-200 bg-white p-4">
+          <span><%= invitation.email_address %> · <%= invitation.organization.name %> · <%= invitation.active? ? "expires #{l(invitation.expires_at, format: :short)}" : "expired" %></span>
+          <div class="flex gap-3">
+            <%= button_to "Resend", resend_admin_invitation_path(invitation), method: :patch, class: "underline" %>
+            <%= button_to "Revoke", admin_invitation_path(invitation), method: :delete, class: "text-red-700 underline" %>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</section>

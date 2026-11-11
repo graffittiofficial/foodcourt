@@ -202,7 +202,7 @@ class MarketplaceCheckoutTest < ActiveSupport::TestCase
   end
 
   def delivery_ready_restaurant(name, place_id, base_fee, per_km_fee)
-    Restaurant.create!(
+    create_restaurant(
       name: name,
       address_line1: "1 Restaurant Way",
       city: "Townsville",

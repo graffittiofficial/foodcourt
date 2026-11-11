@@ -1,0 +1,20 @@
+<% content_for :title, "Edit report schedule | Foodcourt" %>
+<section class="max-w-2xl rounded-xl border border-stone-200 bg-white p-6">
+  <h1 class="text-2xl font-bold">Edit report schedule</h1>
+  <%= form_with url: report_schedule_path(@schedule), method: :patch, class: "mt-4 grid gap-4", data: { controller: "report-scope" } do |form| %>
+    <div><%= form.label :scope, "Schedule scope", class: "mb-1 block font-semibold" %><%= form.select :scope, @scope_options, { selected: @selected_scope }, required: true, class: "w-full rounded-lg border border-stone-300 px-3 py-2", data: { report_scope_target: "select", action: "change->report-scope#change" } %></div>
+    <fieldset><legend class="mb-2 font-semibold">Report categories</legend><div class="flex flex-wrap gap-4">
+      <% @categories.each do |key, value| %><label class="flex items-center gap-2"><%= check_box_tag "categories[]", value, @selected_categories.include?(value) %><%= key.to_s.humanize %></label><% end %>
+    </div></fieldset>
+    <div><%= form.label :cadence, class: "mb-1 block font-semibold" %><%= form.select :cadence, ReportSchedule::CADENCES.keys.map { |cadence| [ cadence.to_s.humanize, cadence ] }, { selected: @schedule.cadence }, required: true, class: "w-full rounded-lg border border-stone-300 px-3 py-2" %></div>
+    <div><%= form.label :run_at, "Local run time", class: "mb-1 block font-semibold" %><%= form.time_field :run_at, value: @schedule.run_at.strftime("%H:%M"), required: true, class: "w-full rounded-lg border border-stone-300 px-3 py-2" %><p class="mt-1 text-sm text-stone-600">Time zone is taken from the selected Organization.</p></div>
+    <fieldset><legend class="mb-2 font-semibold">Email recipients</legend>
+      <% @recipient_options_by_scope.each do |scope, users| %>
+        <div class="grid gap-2 sm:grid-cols-2" data-report-scope-target="recipientGroup" data-scope="<%= scope %>" <%= "hidden" unless scope == @selected_scope %>>
+          <% users.each do |user| %><label class="flex items-center gap-2"><%= check_box_tag "recipient_ids[]", user.id, scope == @selected_scope && @selected_recipient_ids.include?(user.id), disabled: scope != @selected_scope %><%= user.email_address %></label><% end %>
+        </div>
+      <% end %>
+    </fieldset>
+    <div class="flex gap-3"><%= form.submit "Save schedule", class: "cursor-pointer rounded-lg bg-stone-950 px-4 py-2 font-semibold text-white" %><%= link_to "Cancel", reports_path, class: "self-center underline" %></div>
+  <% end %>
+</section>

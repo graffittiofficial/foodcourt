@@ -2,13 +2,8 @@ require "test_helper"
 
 class Staff::DashboardControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @restaurant = Restaurant.create!(name: "Bistro")
-    @staff = User.create!(
-      email_address: "staff@example.com",
-      password: "password",
-      role: :staff,
-      restaurant: @restaurant
-    )
+    @restaurant = create_restaurant(name: "Bistro")
+    @staff = create_staff(email_address: "staff@example.com", restaurants: [ @restaurant ])
     @menu_item = MenuItem.create!(restaurant: @restaurant, name: "Soup", price: 8)
   end
 
@@ -33,7 +28,7 @@ class Staff::DashboardControllerTest < ActionDispatch::IntegrationTest
     create_order(status: :cancelled)
     create_order(status: :completed, created_at: 1.day.ago)
 
-    other_restaurant = Restaurant.create!(name: "Other Bistro")
+    other_restaurant = create_restaurant(name: "Other Bistro", organization: @restaurant.organization)
     MenuItem.create!(restaurant: other_restaurant, name: "Cake", price: 50)
     Order.create!(restaurant: other_restaurant, customer_name: "Other", status: :completed)
 
@@ -60,7 +55,7 @@ class Staff::DashboardControllerTest < ActionDispatch::IntegrationTest
 
   test "orders are scoped to the signed-in staff restaurant" do
     sign_in_as(@staff)
-    other_restaurant = Restaurant.create!(name: "Other Bistro")
+    other_restaurant = create_restaurant(name: "Other Bistro", organization: @restaurant.organization)
     order = Order.create!(restaurant: other_restaurant, customer_name: "Private")
 
     get staff_order_path(order)
@@ -79,7 +74,7 @@ class Staff::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to staff_menu_items_path
     assert item.available?
 
-    other_restaurant = Restaurant.create!(name: "Other Bistro")
+    other_restaurant = create_restaurant(name: "Other Bistro", organization: @restaurant.organization)
     patch staff_menu_item_path(item), params: {
       menu_item: {
         name: "Green Salad",
@@ -110,7 +105,7 @@ class Staff::DashboardControllerTest < ActionDispatch::IntegrationTest
 
   test "staff can archive their menu items but cannot access another restaurant item" do
     sign_in_as(@staff)
-    other_restaurant = Restaurant.create!(name: "Other Bistro")
+    other_restaurant = create_restaurant(name: "Other Bistro", organization: @restaurant.organization)
     other_item = MenuItem.create!(restaurant: other_restaurant, name: "Cake", price: 5)
 
     patch archive_staff_menu_item_path(@menu_item)
@@ -131,7 +126,7 @@ class Staff::DashboardControllerTest < ActionDispatch::IntegrationTest
       post staff_orders_path, params: {
         order: {
           customer_name: "Taylor",
-          restaurant_id: Restaurant.create!(name: "Other Bistro").id,
+          restaurant_id: create_restaurant(name: "Other Bistro").id,
           created_by_id: User.create!(email_address: "other@example.com", password: "password").id,
           status: "completed",
           order_items_attributes: {
@@ -152,7 +147,7 @@ class Staff::DashboardControllerTest < ActionDispatch::IntegrationTest
 
   test "order creation rejects empty, unavailable, and cross-restaurant item selections" do
     sign_in_as(@staff)
-    other_restaurant = Restaurant.create!(name: "Other Bistro")
+    other_restaurant = create_restaurant(name: "Other Bistro", organization: @restaurant.organization)
     other_item = MenuItem.create!(restaurant: other_restaurant, name: "Cake", price: 5)
     @menu_item.update!(available: false)
 

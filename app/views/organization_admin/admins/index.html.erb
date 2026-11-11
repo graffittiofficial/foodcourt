@@ -1,0 +1,35 @@
+<% content_for :title, "Organization admins | #{Current.organization.name}" %>
+<h1 class="mb-6 text-3xl font-bold">Organization admins</h1>
+<section class="mb-8 max-w-xl rounded-xl border border-stone-200 bg-white p-6">
+  <h2 class="mb-4 text-xl font-bold">Invite another admin</h2>
+  <% if @invitation&.errors&.any? %><div class="mb-4 rounded-lg bg-red-50 p-4 text-red-800" role="alert"><%= @invitation.errors.full_messages.to_sentence %></div><% end %>
+  <%= form_with url: organization_admin_admins_path, scope: :admin, class: "flex flex-wrap gap-3" do |form| %>
+    <%= form.email_field :email_address, required: true, placeholder: "Email address", class: "min-w-60 flex-1 rounded-lg border border-stone-300 px-3 py-2" %>
+    <%= form.submit "Send invitation", class: "rounded-lg bg-stone-950 px-4 py-2 font-semibold text-white" %>
+  <% end %>
+</section>
+<h2 class="mb-4 text-xl font-bold">Current admins</h2>
+<ul class="divide-y divide-stone-200 rounded-xl border border-stone-200 bg-white">
+  <% @memberships.each do |membership| %>
+    <li class="flex items-center justify-between gap-4 p-4">
+      <span><%= membership.user.email_address %></span>
+      <%= button_to "Remove access", organization_admin_admin_path(membership), method: :delete, class: "font-semibold text-red-700 underline" %>
+    </li>
+  <% end %>
+</ul>
+<section class="mt-8">
+  <h2 class="mb-4 text-xl font-bold">Pending invitations</h2>
+  <% if @invitations.empty? %><p class="text-stone-600">No pending Organization admin invitations.</p><% else %>
+    <ul class="space-y-2">
+      <% @invitations.each do |invitation| %>
+        <li class="flex items-center justify-between rounded-lg border border-stone-200 bg-white p-4">
+          <span><%= invitation.email_address %> · <%= invitation.active? ? "expires #{l(invitation.expires_at, format: :short)}" : "expired" %></span>
+          <div class="flex gap-3">
+            <%= button_to "Resend", resend_organization_admin_invitation_path(invitation), method: :patch, class: "underline" %>
+            <%= button_to "Revoke", organization_admin_invitation_path(invitation), method: :delete, class: "text-red-700 underline" %>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</section>
