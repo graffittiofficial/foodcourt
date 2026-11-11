@@ -3,12 +3,16 @@ class OrdersController < ApplicationController
   before_action :set_order, only: :show
 
   def index
-    @orders = Current.account.orders.includes(
-      :order_items,
-      { restaurant: :photo_attachment },
-      checkout_group: :restaurant
-    )
-      .order(created_at: :desc)
+    @query = params[:q].to_s.strip
+    @orders = Search::Filter.orders(
+      Current.account.orders.includes(
+        :order_items,
+        { restaurant: :photo_attachment },
+        checkout_group: :restaurant
+      ),
+      @query,
+      include_driver: false
+    ).order(created_at: :desc)
   end
 
   def show

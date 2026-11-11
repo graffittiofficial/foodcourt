@@ -2,7 +2,7 @@ require "test_helper"
 
 class CustomerOrderingControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @restaurant = Restaurant.create!(name: "Corner Table")
+    @restaurant = create_restaurant(name: "Corner Table")
     @menu_item = MenuItem.create!(restaurant: @restaurant, name: "Soup", price: "8.50")
   end
 
@@ -33,7 +33,7 @@ class CustomerOrderingControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "restaurant search filters names and public pages show verified ratings" do
-    other_restaurant = Restaurant.create!(name: "Blue Garden")
+    other_restaurant = create_restaurant(name: "Blue Garden")
     customer = User.create!(name: "Review Customer", email_address: "reviewer@example.test", password: "password")
     order = Order.create!(
       restaurant: @restaurant,
@@ -155,5 +155,40 @@ class CustomerOrderingControllerTest < ActionDispatch::IntegrationTest
     get order_path(order)
 
     assert_response :not_found
+  end
+
+  test "customers can locally search only their own order history by restaurant" do
+    customer = User.create!(name: "Order Searcher", email_address: "order-searcher@example.test", password: "password")
+    other_restaurant = create_restaurant(name: "Other Kitchen")
+    matching_order = Order.create!(restaurant: other_restaurant, user: customer, customer_name: customer.name)
+    other_order = Order.create!(restaurant: @restaurant, user: customer, customer_name: customer.name)
+    sign_in_as(customer)
+
+    get orders_path, params: { q: "Other Kitchen" }
+
+    assert_response :success
+    assert_select "a[href='#{order_path(matching_order)}']", text: "Track order"
+    assert_select "a[href='#{order_path(other_order)}']", count: 0
+  end
+
+  test "public restaurant search matches city names without regard to case" do
+    create_restaurant(
+      name: "Harbor Kitchen",
+      city: "Northville",
+      address_line1: "100 Main Street",
+      region: "CA",
+      postal_code: "90210",
+      country_code: "US",
+      google_place_id: "northville-place",
+      delivery_base_fee: 1,
+      delivery_fee_per_km: 1,
+      max_delivery_distance_km: 10
+    )
+
+    get restaurants_path, params: { q: "NORTH" }
+
+    assert_response :success
+    assert_select "h2", text: "Harbor Kitchen"
+    assert_select "h2", text: "Corner Table", count: 0
   end
 end

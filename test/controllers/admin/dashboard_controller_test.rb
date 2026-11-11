@@ -3,7 +3,7 @@ require "test_helper"
 class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
   setup do
     @admin = AdminAccount.create!(email_address: "dashboard-admin@example.com", password: "password")
-    @restaurant = Restaurant.create!(name: "Dashboard Bistro")
+    @restaurant = create_restaurant(name: "Dashboard Bistro")
     @menu_item = MenuItem.create!(restaurant: @restaurant, name: "Noodles", price: "8.50")
     sign_in_as(@admin)
   end
@@ -91,7 +91,7 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
   end
 
   def create_ready_restaurant
-    Restaurant.create!(
+    create_restaurant(
       name: "Ready Bistro",
       address_line1: "1 Restaurant Way",
       city: "Townsville",

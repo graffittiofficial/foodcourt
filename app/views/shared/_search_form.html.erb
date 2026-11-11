@@ -1,0 +1,7 @@
+<%= form_with url:, method: :get, class: "mb-5 flex flex-wrap gap-2" do |form| %>
+  <% preserve_params.except("q", "page").each do |name, value| %>
+    <%= hidden_field_tag name, value %>
+  <% end %>
+  <%= form.search_field :q, value: query, placeholder: placeholder, aria: { label: placeholder }, class: "min-w-0 flex-1 rounded-full border border-stone-300 bg-white px-5 py-3 text-stone-900 placeholder:text-stone-400 focus:border-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-200" %>
+  <%= form.submit "Search", class: "rounded-full bg-stone-950 px-5 py-3 font-semibold text-white hover:bg-stone-700" %>
+<% end %>

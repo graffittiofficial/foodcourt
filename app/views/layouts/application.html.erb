@@ -19,8 +19,8 @@
     <link rel="apple-touch-icon" href="/icon.png">
 
     <%# Includes all stylesheet files in app/assets/stylesheets %>
-    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
-    <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": Rails.env.production? ? "reload" : "" %>
+    <%= javascript_include_tag "application", "data-turbo-track": Rails.env.production? ? "reload" : "", type: "module" %>
   </head>
 
   <body class="min-h-screen bg-stone-50 text-stone-950 antialiased">
@@ -30,38 +30,57 @@
           <span class="flex size-8 items-center justify-center rounded-xl bg-stone-950 text-sm text-white" aria-hidden="true">F</span>
           Foodcourt
         <% end %>
-        <% if Current.account&.staff? %>
-          <nav class="flex items-center gap-5 text-sm font-medium text-stone-700" aria-label="Staff navigation">
-            <%= link_to "Dashboard", staff_dashboard_path %>
-            <%= link_to "Orders", staff_orders_path %>
-            <%= link_to "Menu", staff_menu_items_path %>
-            <%= button_to "Sign out", session_path, method: :delete, class: "text-stone-700" %>
-          </nav>
-        <% elsif Current.account&.admin? %>
-          <nav class="flex items-center gap-5 text-sm font-medium text-stone-700" aria-label="Admin navigation">
+        <nav class="flex flex-wrap items-center gap-3 text-sm font-medium text-stone-700 sm:gap-5" aria-label="Account navigation">
+          <%= link_to "Search", search_path %>
+          <% if Current.account.is_a?(User) && (Current.user.staff? || Current.user.organization_admin?) %>
+            <%= link_to "Reports", reports_path %>
+          <% end %>
+          <% if Current.account&.admin? %>
             <%= link_to "Administration", admin_root_path %>
-            <%= button_to "Sign out", session_path, method: :delete, class: "text-stone-700" %>
-          </nav>
-        <% elsif Current.account&.driver? %>
-          <nav class="flex items-center gap-5 text-sm font-medium text-stone-700" aria-label="Driver navigation">
+          <% end %>
+          <% if Current.account.is_a?(User) && Current.user.organization_admin? %>
+            <%= link_to "Organization", organization_admin_root_path %>
+            <%= link_to "Restaurants", organization_admin_restaurants_path %>
+            <%= link_to "Order history", organization_admin_order_history_path %>
+            <%= link_to "Reviews", organization_admin_reviews_path %>
+            <%= link_to "Staff", organization_admin_staff_index_path %>
+            <%= link_to "Organization admins", organization_admin_admins_path %>
+            <%= link_to "Organization profile", edit_organization_admin_profile_path %>
+            <%= form_with url: switch_organizations_path, method: :patch, class: "flex items-center gap-2" do |form| %>
+              <%= form.collection_select :organization_id, Current.user.administered_organizations.order(:name), :id, :name, { selected: Current.organization&.id }, class: "rounded border border-stone-300 px-2 py-1" %>
+              <%= form.submit "Switch", class: "cursor-pointer underline" %>
+            <% end %>
+          <% end %>
+          <% if Current.account&.staff? %>
+            <%= link_to "Staff dashboard", staff_dashboard_path if Current.restaurant %>
+            <%= link_to "Orders", staff_orders_path if Current.restaurant %>
+            <%= link_to "Menu", staff_menu_items_path if Current.restaurant %>
+            <% if Current.restaurant %>
+              <%= form_with url: select_staff_restaurant_path(Current.restaurant), method: :patch, class: "flex items-center gap-2" do |form| %>
+                <%= form.collection_select :id, Current.user.restaurants.order(:name), :id, :name, { selected: Current.restaurant.id }, class: "rounded border border-stone-300 px-2 py-1" %>
+                <%= form.submit "Switch", class: "cursor-pointer underline" %>
+              <% end %>
+            <% else %>
+              <%= link_to "Choose restaurant", staff_restaurants_path %>
+            <% end %>
+          <% end %>
+          <% if Current.account.is_a?(User) && Current.account.driver? %>
             <%= link_to "My deliveries", driver_root_path %>
-            <%= button_to "Sign out", session_path, method: :delete, class: "text-stone-700" %>
-          </nav>
-        <% elsif Current.account&.customer? %>
-          <nav class="flex items-center gap-2 text-sm font-medium text-stone-700 sm:gap-5" aria-label="Customer navigation">
+          <% end %>
+          <% if Current.account.is_a?(User) && Current.user.customer? %>
             <%= link_to "Restaurants", restaurants_path, class: "hidden hover:text-stone-950 sm:inline" %>
             <%= link_to "Basket", cart_path, class: "rounded-full border border-stone-300 px-3 py-2 hover:border-stone-950 hover:text-stone-950" %>
             <%= link_to "My orders", orders_path, class: "hidden hover:text-stone-950 sm:inline" %>
-            <%= button_to "Sign out", session_path, method: :delete, class: "text-stone-700" %>
-          </nav>
-        <% else %>
-          <nav class="flex items-center gap-2 text-sm font-medium text-stone-700 sm:gap-5" aria-label="Account navigation">
+          <% elsif Current.account.nil? %>
             <%= link_to "Restaurants", restaurants_path, class: "hidden hover:text-stone-950 sm:inline" %>
             <%= link_to "Basket", cart_path, class: "rounded-full border border-stone-300 px-3 py-2 hover:border-stone-950 hover:text-stone-950" %>
             <%= link_to "Sign in", new_session_path, class: "hidden hover:text-stone-950 sm:inline" %>
             <%= link_to "Create account", new_registration_path, class: "rounded-full bg-stone-950 px-4 py-2.5 font-semibold text-white hover:bg-stone-700" %>
-          </nav>
-        <% end %>
+          <% end %>
+          <% if Current.account.present? %>
+            <%= button_to "Sign out", session_path, method: :delete, class: "text-stone-700" %>
+          <% end %>
+        </nav>
       </div>
     </header>
     <main class="mx-auto max-w-7xl px-4 py-6 pb-24 sm:px-6 sm:py-10">

@@ -2,14 +2,45 @@ Rails.application.routes.draw do
   resource :session
   resource :registration, only: %i[new create]
   resources :passwords, param: :token
+  resources :invitations, param: :token, only: :show
+  post "invitations/:token", to: "invitations#create", as: :accept_invitation
+  resources :organizations, only: :index do
+    patch :switch, on: :collection
+  end
+  resources :reports, only: %i[index create show] do
+    get :download, on: :member
+  end
+  resources :report_schedules, only: %i[create edit update destroy] do
+    patch :pause, on: :member
+    patch :resume, on: :member
+  end
+  get "search", to: "search#index", as: :search
+
+  namespace :organization_admin, path: "organization" do
+    root "dashboard#show"
+    resource :profile, only: %i[edit update], controller: :profile
+    resources :restaurants, only: %i[index new create edit update]
+    get "order-history", to: "order_history#index", as: :order_history
+    resources :reviews, only: :index
+    resources :staff, only: %i[index create destroy]
+    resources :admins, only: %i[index create destroy]
+    resources :invitations, only: :destroy do
+      patch :resend, on: :member
+    end
+  end
 
   namespace :admin do
     root "dashboard#show"
+    resources :organizations, only: %i[index create destroy]
+    resources :invitations, only: :destroy do
+      patch :resend, on: :member
+    end
     resources :restaurants, only: %i[index new create edit update] do
       post :connect, on: :member
       get :connect, on: :member
       resources :menu_items, only: %i[edit update]
     end
+    get "order-history", to: "order_history#index", as: :order_history
     resources :orders, only: %i[index update]
     resources :drivers, only: %i[index new create]
     resources :reviews, only: %i[index destroy]
@@ -24,6 +55,9 @@ Rails.application.routes.draw do
 
   namespace :staff do
     root "dashboard#show", as: :dashboard
+    resources :restaurants, only: :index do
+      patch :select, on: :member
+    end
     resources :orders, only: %i[index show new create] do
       member do
         patch :advance

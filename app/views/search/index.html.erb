@@ -1,0 +1,65 @@
+<% content_for :title, "Search | Foodcourt" %>
+<div class="mb-8">
+  <p class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Foodcourt</p>
+  <h1 class="mt-2 text-3xl font-bold tracking-tight text-stone-950 sm:text-4xl">Search</h1>
+  <p class="mt-2 text-stone-600">Search the records available to your account.</p>
+</div>
+
+<%= form_with url: search_path, method: :get, class: "mb-8 flex flex-wrap items-end gap-3" do |form| %>
+  <div class="min-w-0 flex-1">
+    <%= form.label :q, "Search terms", class: "mb-1 block text-sm font-semibold text-stone-700" %>
+    <%= form.search_field :q, value: @query, placeholder: "Search records", class: "w-full rounded-full border border-stone-300 bg-white px-5 py-3 text-stone-900 placeholder:text-stone-400 focus:border-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-200" %>
+  </div>
+  <div>
+    <%= form.label :type, "Record type", class: "mb-1 block text-sm font-semibold text-stone-700" %>
+    <%= select_tag :type, options_for_select([ [ "All types", "" ] ] + @type_options, @type), class: "rounded-full border border-stone-300 bg-white px-4 py-3 text-stone-900" %>
+  </div>
+  <%= form.submit "Search", class: "rounded-full bg-stone-950 px-5 py-3 font-semibold text-white hover:bg-stone-700" %>
+<% end %>
+
+<% if @query.blank? %>
+  <p class="rounded-2xl border border-dashed border-stone-300 bg-white p-8 text-center text-stone-600">Enter a search term to find matching records.</p>
+<% elsif @groups.empty? %>
+  <p class="rounded-2xl border border-dashed border-stone-300 bg-white p-8 text-center text-stone-600">No matching records are available in your search scope.</p>
+<% else %>
+  <div class="space-y-8">
+    <% @groups.each do |group| %>
+      <section data-search-type="<%= group[:type] %>">
+        <div class="mb-3 flex items-baseline justify-between gap-3">
+          <h2 class="text-xl font-bold text-stone-950"><%= group[:label] %></h2>
+          <span class="text-sm text-stone-500"><%= pluralize(group[:total_count], "match") %></span>
+        </div>
+        <% if group[:records].empty? %>
+          <p class="rounded-xl border border-dashed border-stone-300 bg-white p-5 text-sm text-stone-600">No matching <%= group[:label].downcase %>.</p>
+        <% else %>
+          <ul class="space-y-3">
+            <% group[:records].each do |record| %>
+              <li id="<%= "#{group[:type].singularize}-#{record.id}" %>" class="rounded-xl border border-stone-200 bg-white p-5">
+                <%= link_to result_title(group[:type], record), result_path(group[:type], record), class: "font-semibold text-stone-950 hover:underline" %>
+                <p class="mt-1 text-sm text-stone-600"><%= result_description(group[:type], record) %></p>
+                <% if group[:type] == "reviews" && record.body.present? %>
+                  <p class="mt-2 text-sm text-stone-700"><%= record.body %></p>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        <% end %>
+        <% if @type.blank? && group[:total_count] > Search::Results::PAGE_SIZE %>
+          <%= link_to "View all #{group[:label].downcase}", search_path(q: @query, type: group[:type]), class: "mt-3 inline-block text-sm font-semibold text-stone-700 underline" %>
+        <% elsif group[:total_pages] > 1 %>
+          <nav class="mt-4 flex items-center justify-between text-sm" aria-label="<%= "#{group[:label]} search result pages" %>">
+            <span>Page <%= group[:page] %> of <%= group[:total_pages] %></span>
+            <div class="flex gap-3">
+              <% if group[:page] > 1 %>
+                <%= link_to "Previous", search_path(q: @query, type: group[:type], page: group[:page] - 1), class: "font-semibold underline" %>
+              <% end %>
+              <% if group[:page] < group[:total_pages] %>
+                <%= link_to "Next", search_path(q: @query, type: group[:type], page: group[:page] + 1), class: "font-semibold underline" %>
+              <% end %>
+            </div>
+          </nav>
+        <% end %>
+      </section>
+    <% end %>
+  </div>
+<% end %>

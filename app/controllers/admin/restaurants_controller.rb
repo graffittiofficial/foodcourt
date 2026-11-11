@@ -3,7 +3,11 @@ module Admin
     before_action :set_restaurant, only: %i[edit update connect]
 
     def index
-      @restaurants = Restaurant.includes(:photo_attachment).order(:name)
+      @query = params[:q].to_s.strip
+      @restaurants = Search::Filter.restaurants(
+        Restaurant.includes(:photo_attachment).order(:name),
+        @query
+      )
     end
 
     def new
@@ -62,6 +66,7 @@ module Admin
     def restaurant_params
       params.require(:restaurant).permit(
         :name,
+        :organization_id,
         :description,
         :photo,
         :address_line1,

@@ -7,7 +7,7 @@
   </div>
   <div class="flex flex-wrap items-center gap-3">
     <%= form_with url: restaurants_path, method: :get, class: "flex min-w-0 flex-1 gap-2 sm:max-w-xl" do |form| %>
-      <%= form.search_field :q, value: @query, placeholder: "Search restaurants", aria: { label: "Search restaurants" }, class: "min-w-0 flex-1 rounded-full border border-stone-300 bg-white px-5 py-3 text-stone-900 placeholder:text-stone-400 focus:border-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-200" %>
+      <%= form.search_field :q, value: @query, placeholder: "Search restaurants by name or city", aria: { label: "Search restaurants by name or city" }, class: "min-w-0 flex-1 rounded-full border border-stone-300 bg-white px-5 py-3 text-stone-900 placeholder:text-stone-400 focus:border-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-200" %>
       <%= form.submit "Search", class: "rounded-full bg-stone-950 px-5 py-3 font-semibold text-white hover:bg-stone-700" %>
     <% end %>
     <%= link_to "Basket", cart_path, class: "rounded-full border border-stone-300 px-5 py-3 font-semibold text-stone-900 hover:bg-stone-100" %>

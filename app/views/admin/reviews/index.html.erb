@@ -1,12 +1,13 @@
 <% content_for :title, "Customer reviews | Admin" %>
 <h1 class="mb-6 text-3xl font-bold text-stone-900">Customer reviews</h1>
+<%= render "shared/search_form", url: admin_reviews_path, query: @query, placeholder: "Search review text, reviewer, target, or rating", preserve_params: request.query_parameters %>
 
 <% if @reviews.empty? %>
   <p class="rounded-2xl border border-dashed border-stone-300 p-8 text-center text-stone-600">No customer reviews have been submitted.</p>
 <% else %>
   <ul class="space-y-4">
     <% @reviews.each do |review| %>
-      <li class="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-stone-200 bg-white p-5">
+      <li id="review-<%= review.id %>" class="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-stone-200 bg-white p-5">
         <div>
           <p class="font-semibold"><%= review.reviewable.name %> · <%= "★" * review.rating %><span class="text-stone-400"><%= "★" * (5 - review.rating) %></span></p>
           <p class="mt-1 text-sm text-stone-600">By <%= review.user.email_address %> · Order #<%= review.order_id %></p>

@@ -102,8 +102,18 @@ each ordered menu item from 1 to 5 stars, with an optional written comment.
 Ratings publish immediately, can be edited or deleted by their author, and are
 shown with their actual review count and average. Admins can remove inappropriate
 reviews from **Admin → Reviews**. Restaurant discovery supports searching by
-restaurant name; it does not display unconfigured cuisine, delivery-time, or
-popularity claims.
+restaurant name or city; it does not display unconfigured cuisine, delivery-time,
+or popularity claims.
+
+## Search
+
+The **Search** page provides grouped, filterable results with case-insensitive
+partial matching. Admins can search Organizations, Restaurants, Drivers, order
+history, deliveries, and Reviews. Organization admins are restricted to the
+selected Organization and its related records; drivers see only their assigned
+deliveries; customers see public Restaurants, their own orders, and Reviews
+they authored. Local search is also available on the corresponding list pages.
+Customer names, contact details, and delivery addresses are not search fields.
 
 Keep the server Google API key restricted to the required APIs and the browser
 key restricted to the app's allowed domains. Never place Stripe secrets in
@@ -126,3 +136,22 @@ The Compose services are available on `localhost:5433` (PostgreSQL),
 Redis data persist in named Docker volumes. The default PostgreSQL credentials
 are for local development only and can be overridden with `POSTGRES_DB`,
 `POSTGRES_USER`, and `POSTGRES_PASSWORD`.
+
+## Reports
+
+Organization admins and Restaurant staff can request Finance, Operations, and
+Kitchen/product CSV reports from **Reports**. Generation runs through ActiveJob
+on Sidekiq; start the worker with `bin/dev` or `bundle exec sidekiq -q default
+-q reports -q mailers`. On-demand reports use inclusive Organization-local
+dates, default to the prior 30 complete days, and allow at most one year.
+Recurring schedules can run daily, weekly, or monthly; reports cover the
+previous complete local period. Organization admins can set the Organization
+time zone in **Organization profile**; it defaults to UTC.
+
+Generated files use the configured Active Storage backend, expire after 30
+days, and can be downloaded only by users who still have access to the report
+scope. Completion emails include both a protected app link and a CSV
+attachment; emailed attachments cannot be recalled after delivery. Configure
+`REDIS_URL` for production web and job containers and `APP_HOST` to the public
+hostname used in report email links. Production email delivery also requires
+working Action Mailer SMTP settings.

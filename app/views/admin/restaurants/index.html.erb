@@ -3,9 +3,10 @@
   <h1 class="text-3xl font-bold text-stone-900">Restaurants</h1>
   <%= link_to "Add restaurant", new_admin_restaurant_path, class: "rounded-lg bg-orange-600 px-4 py-2.5 font-semibold text-white" %>
 </div>
+<%= render "shared/search_form", url: admin_restaurants_path, query: @query, placeholder: "Search restaurants by name or city", preserve_params: request.query_parameters %>
 <ul class="space-y-3">
   <% @restaurants.each do |restaurant| %>
-    <li class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-stone-200 bg-white p-5">
+    <li id="restaurant-<%= restaurant.id %>" class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-stone-200 bg-white p-5">
       <div class="flex items-center gap-4">
         <% if restaurant.photo.attached? %><%= image_tag restaurant.photo, class: "size-14 rounded-xl object-cover", alt: restaurant.name %><% end %>
         <div><h2 class="font-semibold"><%= restaurant.name %></h2><p class="text-sm text-stone-600"><%= restaurant.stripe_connected? ? "Stripe Connect ready" : "Stripe onboarding required" %> · <%= restaurant.delivery_configured? ? "Delivery configured" : "Delivery settings incomplete" %></p></div>

@@ -1,0 +1,22 @@
+<% content_for :title, "Reviews | #{Current.organization.name}" %>
+<div class="mb-6">
+  <p class="text-sm font-semibold uppercase tracking-wide text-emerald-800">Organization</p>
+  <h1 class="mt-1 text-3xl font-bold tracking-tight text-stone-900">Restaurant reviews</h1>
+  <p class="mt-2 text-stone-600">Reviews for restaurants in <%= Current.organization.name %>.</p>
+</div>
+<%= render "shared/search_form", url: organization_admin_reviews_path, query: @query, placeholder: "Search review text, reviewer, target, or rating", preserve_params: request.query_parameters %>
+
+<% if @reviews.empty? %>
+  <p class="rounded-xl border border-dashed border-stone-300 bg-white p-8 text-center text-stone-600">No reviews match this view.</p>
+<% else %>
+  <ul class="space-y-4">
+    <% @reviews.each do |review| %>
+      <li id="review-<%= review.id %>" class="rounded-2xl border border-stone-200 bg-white p-5">
+        <p class="font-semibold"><%= review.reviewable.name %> · <%= review.rating %>/5</p>
+        <p class="mt-1 text-sm text-stone-600">By <%= review.user.name.presence || "Customer" %> · Order #<%= review.order_id %></p>
+        <% if review.body.present? %><p class="mt-3 text-stone-700"><%= review.body %></p><% end %>
+      </li>
+    <% end %>
+  </ul>
+  <% if @reviews.size == 100 %><p class="mt-4 text-sm text-stone-600">Showing the 100 most recent matching reviews.</p><% end %>
+<% end %>

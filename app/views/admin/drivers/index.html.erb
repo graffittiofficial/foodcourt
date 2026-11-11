@@ -3,8 +3,9 @@
   <h1 class="text-3xl font-bold text-stone-900">Drivers</h1>
   <%= link_to "Create driver account", new_admin_driver_path, class: "rounded-lg bg-orange-600 px-4 py-2.5 font-semibold text-white" %>
 </div>
+<%= render "shared/search_form", url: admin_drivers_path, query: @query, placeholder: "Search drivers by name or email", preserve_params: request.query_parameters %>
 <ul class="space-y-3">
   <% @drivers.each do |driver| %>
-    <li class="rounded-xl border border-stone-200 bg-white p-5"><p class="font-semibold"><%= driver.name %></p><p class="text-sm text-stone-600"><%= driver.email_address %></p></li>
+    <li id="driver-<%= driver.id %>" class="rounded-xl border border-stone-200 bg-white p-5"><p class="font-semibold"><%= driver.name %></p><p class="text-sm text-stone-600"><%= driver.email_address %></p></li>
   <% end %>
 </ul>

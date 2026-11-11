@@ -5,6 +5,8 @@
   <p class="mt-2 text-stone-600">Follow your deliveries and revisit your past orders.</p>
 </div>
 
+<%= render "shared/search_form", url: orders_path, query: @query, placeholder: "Search your orders by restaurant, order ID, or status", preserve_params: request.query_parameters %>
+
 <% if @orders.empty? %>
   <section class="rounded-3xl border border-stone-200 bg-white p-10 text-center">
     <h2 class="text-xl font-bold text-stone-950">No orders yet</h2>
@@ -14,7 +16,7 @@
 <% else %>
   <ul class="space-y-4">
     <% @orders.each do |order| %>
-      <li class="overflow-hidden rounded-3xl border border-stone-200 bg-white">
+      <li id="order-<%= order.id %>" class="overflow-hidden rounded-3xl border border-stone-200 bg-white">
         <div class="flex flex-wrap items-center justify-between gap-4 p-5 sm:p-6">
           <div class="flex min-w-0 items-center gap-4">
             <% if order.restaurant.photo.attached? %>

@@ -1,11 +1,12 @@
 <% content_for :title, "Delivery assignment | Admin" %>
 <h1 class="mb-6 text-3xl font-bold text-stone-900">Delivery assignment</h1>
+<%= render "shared/search_form", url: admin_orders_path, query: @query, placeholder: "Search deliveries", preserve_params: request.query_parameters %>
 <% if @orders.empty? %>
   <p class="rounded-xl border border-dashed border-stone-300 p-8 text-center text-stone-600">No paid restaurant orders are ready for delivery assignment.</p>
 <% else %>
   <div class="space-y-4">
     <% @orders.each do |order| %>
-      <article class="rounded-xl border border-stone-200 bg-white p-5">
+      <article id="order-<%= order.id %>" class="rounded-xl border border-stone-200 bg-white p-5">
         <div class="flex flex-wrap justify-between gap-3">
           <div><h2 class="font-bold"><%= order.restaurant.name %> · Order #<%= order.id %></h2><p class="mt-1 text-sm text-stone-600"><%= order.customer_name %> · <%= order.checkout_group.checkout.customer_phone %></p><p class="text-sm text-stone-600"><%= order.checkout_group.checkout.address_line1 %>, <%= order.checkout_group.checkout.city %> <%= order.checkout_group.checkout.postal_code %></p></div>
           <p class="font-semibold"><%= order.delivery_status.humanize %></p>

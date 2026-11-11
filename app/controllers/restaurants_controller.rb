@@ -4,7 +4,7 @@ class RestaurantsController < ApplicationController
   def index
     @query = params[:q].to_s.strip
     @restaurants = Restaurant.includes(:reviews, :photo_attachment, menu_items: [ :photo_attachment ]).order(:name)
-    @restaurants = @restaurants.where("restaurants.name ILIKE ?", "%#{Restaurant.sanitize_sql_like(@query)}%") if @query.present?
+    @restaurants = Search::Filter.restaurants(@restaurants, @query)
   end
 
   def show

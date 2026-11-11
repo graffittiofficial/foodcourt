@@ -1,7 +1,8 @@
 module Admin
   class DriversController < BaseController
     def index
-      @drivers = User.driver.order(:name, :email_address)
+      @query = params[:q].to_s.strip
+      @drivers = Search::Filter.drivers(User.driver.order(:name, :email_address), @query)
     end
 
     def new

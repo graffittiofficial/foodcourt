@@ -1,7 +1,11 @@
 module Admin
   class ReviewsController < BaseController
     def index
-      @reviews = Review.includes(:user, :order, :reviewable).order(created_at: :desc).limit(100)
+      @query = params[:q].to_s.strip
+      @reviews = Search::Filter.reviews(
+        Review.includes(:user, :order, :reviewable).order(created_at: :desc),
+        @query
+      ).limit(100)
     end
 
     def destroy

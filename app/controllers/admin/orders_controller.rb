@@ -1,7 +1,11 @@
 module Admin
   class OrdersController < BaseController
     def index
-      @orders = Order.includes(:restaurant, :user, :driver, checkout_group: :checkout)
+      @query = params[:q].to_s.strip
+      @orders = Search::Filter.orders(
+        Order.includes(:restaurant, :user, :driver, checkout_group: :checkout),
+        @query
+      )
         .where.not(checkout_group_id: nil)
         .where(delivery_status: %i[unassigned assigned])
         .order(created_at: :desc)

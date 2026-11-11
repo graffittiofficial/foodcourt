@@ -1,0 +1,14 @@
+<% content_for :title, "Restaurants | #{Current.organization.name}" %>
+<div class="mb-6 flex items-center justify-between gap-4">
+  <h1 class="text-3xl font-bold">Restaurants</h1>
+  <%= link_to "Add Restaurant", new_organization_admin_restaurant_path, class: "rounded-lg bg-emerald-700 px-4 py-2.5 font-semibold text-white" %>
+</div>
+<%= render "shared/search_form", url: organization_admin_restaurants_path, query: @query, placeholder: "Search restaurants by name or city", preserve_params: request.query_parameters %>
+<ul class="space-y-3">
+  <% @restaurants.each do |restaurant| %>
+    <li id="restaurant-<%= restaurant.id %>" class="flex items-center justify-between rounded-xl border border-stone-200 bg-white p-5">
+      <div><h2 class="font-semibold"><%= restaurant.name %></h2><p class="text-sm text-stone-600"><%= restaurant.staff_users.count %> staff · <%= restaurant.stripe_connected? ? "Payments connected" : "Payments managed by platform admin" %></p></div>
+      <%= link_to "Edit settings", edit_organization_admin_restaurant_path(restaurant), class: "font-semibold text-emerald-800 underline" %>
+    </li>
+  <% end %>
+</ul>

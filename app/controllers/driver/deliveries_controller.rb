@@ -3,7 +3,10 @@ module Driver
     before_action :set_order, only: :advance
 
     def index
-      @orders = Current.account.assigned_orders
+      @query = params[:q].to_s.strip
+      @orders = Search::Filter.orders(Current.account.assigned_orders,
+        @query,
+        include_driver: false)
         .includes(:restaurant, { order_items: :menu_item }, checkout_group: :checkout)
         .order(created_at: :desc)
     end
