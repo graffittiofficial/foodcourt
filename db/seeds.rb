@@ -116,8 +116,18 @@ if Rails.env.development?
       item.quantity = 1
     end
   end
+  User.create_with(password: "password").find_or_create_by!(email_address: "c@mail.com", role: "customer")
+  User.create_with(password: "password").find_or_create_by!(name: "demo driver", email_address: "d@mail.com", role: "driver")
+
+  extra_staff = User.find_or_create_by!(email_address: "s@mail.com") do |user|
+    user.role = :customer
+    user.password = "password"
+  end
+  extra_staff_restaurant = demo_organization.restaurants.find_or_create_by!(name: "Additional Staff Restaurant")
+  RestaurantMembership.find_or_create_by!(user: extra_staff, restaurant: extra_staff_restaurant)
 
   puts "Development demo data is ready."
   puts "Customer sign-in: demo.customer@example.test / password"
+  puts "Organization admin sign-in: demo.orgadmin@example.test / password"
   puts "Staff sign-in: demo.staff@example.test / password"
 end
