@@ -47,6 +47,7 @@ The regular development setup is:
 - Load development demo data: `bin/rails db:seed`
 - Start the app: `bin/dev`
 - Run tests: `bin/rails test`
+- Check application line coverage (80% minimum): `bin/rails coverage`
 
 When using a forwarded Codespaces port, open the app through its forwarded
 `*.app.github.dev` URL. Development also accepts the exact origin

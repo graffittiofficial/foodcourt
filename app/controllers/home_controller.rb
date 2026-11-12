@@ -1,4 +1,5 @@
 class HomeController < ApplicationController
+  before_action :resume_session
   allow_unauthenticated_access
 
   def show
