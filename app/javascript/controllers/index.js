@@ -12,3 +12,6 @@ application.register("address-autocomplete", AddressAutocompleteController)
 
 import ReportScopeController from "./report_scope_controller"
 application.register("report-scope", ReportScopeController)
+
+import AdminNavController from "./admin_nav_controller"
+application.register("admin-nav", AdminNavController)

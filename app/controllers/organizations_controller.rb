@@ -1,4 +1,6 @@
 class OrganizationsController < ApplicationController
+  layout "organization_admin"
+
   def index
     return redirect_to admin_root_path if Current.account&.admin?
     return head :forbidden unless Current.user.is_a?(User)

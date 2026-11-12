@@ -1,5 +1,9 @@
 module OrganizationAdmin
   class BaseController < ApplicationController
+    CHART_DATE_RANGES = { "7" => 7, "30" => 30, "90" => 90 }.freeze
+
+    layout "organization_admin"
+
     before_action :require_organization_admin
     before_action :set_current_organization
     helper_method :current_organization

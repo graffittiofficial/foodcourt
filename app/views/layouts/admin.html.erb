@@ -1,3 +1,19 @@
+<% navigation_groups = [
+  { label: "Overview", links: [ { label: "Dashboard", path: admin_root_path, icon: :dashboard } ] },
+  { label: "Platform", links: [
+    { label: "Organizations", path: admin_organizations_path, active_prefix: "/admin/organizations", icon: :organization },
+    { label: "Restaurants", path: admin_restaurants_path, active_prefix: "/admin/restaurants", icon: :restaurant }
+  ] },
+  { label: "Operations", links: [
+    { label: "Order history", path: admin_order_history_path, active_prefix: "/admin/order-history", icon: :orders },
+    { label: "Deliveries", path: admin_orders_path, active_prefix: "/admin/orders", icon: :delivery }
+  ] },
+  { label: "People & quality", links: [
+    { label: "Drivers", path: admin_drivers_path, active_prefix: "/admin/drivers", icon: :people },
+    { label: "Reviews", path: admin_reviews_path, active_prefix: "/admin/reviews", icon: :reviews }
+  ] },
+  { label: "Tools", links: [ { label: "Search", path: search_path, icon: :search } ] }
+] %>
 <!DOCTYPE html>
 <html>
   <head>
@@ -5,31 +21,32 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
-    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
-    <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": Rails.env.production? ? "reload" : "" %>
+    <%= javascript_include_tag "application", "data-turbo-track": Rails.env.production? ? "reload" : "", type: "module" %>
   </head>
-  <body class="bg-stone-50">
-    <header class="border-b border-stone-200 bg-white">
-      <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <%= link_to "Foodcourt administration", admin_root_path, class: "font-bold text-stone-900" %>
-        <nav class="flex flex-wrap items-center gap-4 text-sm font-medium text-stone-700" aria-label="Administration navigation">
-          <%= link_to "Dashboard", admin_root_path %>
-          <%= link_to "Search", search_path %>
-          <%= link_to "Organizations", admin_organizations_path %>
-          <%= link_to "Restaurants", admin_restaurants_path %>
-          <%= link_to "Order history", admin_order_history_path %>
-          <%= link_to "Deliveries", admin_orders_path %>
-          <%= link_to "Drivers", admin_drivers_path %>
-          <%= link_to "Reviews", admin_reviews_path %>
-          <%= button_to "Sign out", session_path, method: :delete %>
-        </nav>
+  <body class="min-h-screen bg-stone-100 text-stone-950 antialiased">
+    <div data-controller="admin-nav" data-action="keydown.esc->admin-nav#close">
+      <button type="button" class="fixed inset-0 z-40 hidden bg-stone-950/40 lg:hidden" aria-label="Close navigation" data-admin-nav-target="backdrop" data-action="click->admin-nav#close"></button>
+      <aside id="admin-sidebar" class="fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col overflow-y-auto border-r border-stone-200 bg-white px-4 py-5 shadow-xl transition-transform duration-200 lg:translate-x-0 lg:shadow-none" data-admin-nav-target="sidebar">
+        <%= render "layouts/admin_sidebar", sidebar_title: "Platform admin", navigation_groups: navigation_groups, organization_context: false %>
+      </aside>
+      <div class="min-h-screen lg:pl-72">
+        <header class="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-stone-200 bg-white/95 px-4 backdrop-blur sm:px-6 lg:px-8">
+          <div class="flex items-center gap-3">
+            <button type="button" class="inline-flex size-10 items-center justify-center rounded-lg border border-stone-200 text-stone-700 hover:bg-stone-100 lg:hidden" aria-label="Open navigation" aria-controls="admin-sidebar" aria-expanded="false" data-admin-nav-target="toggle" data-action="click->admin-nav#open">
+              <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+            </button>
+            <p class="text-sm font-semibold text-stone-500">Platform administration</p>
+          </div>
+          <%= link_to "Add restaurant", new_admin_restaurant_path, class: "rounded-lg bg-orange-700 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-800" %>
+        </header>
+        <main class="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          <% flash.each do |type, message| %>
+            <p class="mb-5 rounded-lg px-4 py-3 <%= type == "alert" ? "bg-red-50 text-red-800" : "bg-green-50 text-green-800" %>" role="<%= type == "alert" ? "alert" : "status" %>"><%= message %></p>
+          <% end %>
+          <%= yield %>
+        </main>
       </div>
-    </header>
-    <main class="mx-auto max-w-7xl px-6 py-8">
-      <% flash.each do |type, message| %>
-        <p class="mb-5 rounded-lg px-4 py-3 <%= type == "alert" ? "bg-red-50 text-red-800" : "bg-green-50 text-green-800" %>" role="<%= type == "alert" ? "alert" : "status" %>"><%= message %></p>
-      <% end %>
-      <%= yield %>
-    </main>
+    </div>
   </body>
 </html>

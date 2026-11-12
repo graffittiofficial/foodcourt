@@ -57,6 +57,37 @@ class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_select "p", text: "$0.00", count: 2
   end
 
+  test "dashboard charts share the selected date range and link into order history" do
+    order = create_order(
+      customer: User.create!(name: "Chart Customer", email_address: "chart@example.com", password: "password"),
+      status: :completed,
+      quantity: 2,
+      delivery_fee: "2.50"
+    )
+
+    get admin_root_path, params: { range: "7" }
+
+    assert_response :success
+    assert_select "a[aria-current='date']", text: "7 days"
+    assert_select "svg[aria-label='Orders per day']"
+    assert_select "svg[aria-label='Completed sales per day']"
+    assert_select "a[href='#{admin_order_history_path(range: "7", created_on: Time.zone.today.iso8601)}']"
+    assert_select "a[href='#{admin_order_history_path(range: "7", created_on: Time.zone.today.iso8601, status: "completed")}']"
+    assert_select "a[href='#{admin_order_history_path(range: "7", status: "completed")}']"
+    assert_select "a[href='#{admin_order_history_path(range: "7", delivery_status: "unassigned")}']"
+    assert_select "a[href='#{admin_order_history_path(range: "7", restaurant_id: @restaurant.id, status: "completed")}']"
+    assert_includes response.body, order.customer_name
+    assert_includes response.body, "$19.50"
+    assert_select "aside#admin-sidebar"
+    assert_select "a", text: "Search"
+  end
+
+  test "dashboard rejects unsupported chart date ranges" do
+    get admin_root_path, params: { range: "365" }
+
+    assert_response :bad_request
+  end
+
   private
 
   def create_order(customer:, status:, quantity:, delivery_fee:, created_at: Time.current)

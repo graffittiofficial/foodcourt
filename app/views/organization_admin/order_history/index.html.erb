@@ -1,10 +1,24 @@
 <% content_for :title, "Order history | #{Current.organization.name}" %>
 <div class="mb-6">
-  <p class="text-sm font-semibold uppercase tracking-wide text-emerald-800">Organization</p>
-  <h1 class="mt-1 text-3xl font-bold tracking-tight text-stone-900">Order history</h1>
+  <p class="text-sm font-semibold uppercase tracking-wide text-orange-800">Organization operations</p>
+  <h1 class="mt-1 text-3xl font-bold tracking-tight text-stone-950">Order history</h1>
   <p class="mt-2 text-stone-600">Orders placed at restaurants in <%= Current.organization.name %>.</p>
 </div>
 <%= render "shared/search_form", url: organization_admin_order_history_path, query: @query, placeholder: "Search order ID, restaurant, driver, or status", preserve_params: request.query_parameters %>
+
+<% if @filters_active %>
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-stone-200 bg-white p-4 text-sm text-stone-700">
+    <p>
+      Filtered orders
+      <%= " · last #{@range} days" if @range %>
+      <%= " · created on #{l(@created_on, format: :long)}" if @created_on %>
+      <%= " · #{@status.humanize}" if @status %>
+      <%= " · #{@delivery_status.humanize} deliveries" if @delivery_status %>
+      <%= " · #{Current.organization.restaurants.find(@restaurant_id).name}" if @restaurant_id %>
+    </p>
+    <%= link_to "Clear chart filters", organization_admin_order_history_path(q: @query.presence), class: "font-semibold text-stone-800 underline decoration-stone-300 underline-offset-4" %>
+  </div>
+<% end %>
 
 <% if @orders.empty? %>
   <p class="rounded-xl border border-dashed border-stone-300 bg-white p-8 text-center text-stone-600">No orders match this history view.</p>
@@ -35,5 +49,15 @@
       </tbody>
     </table>
   </div>
-  <% if @orders.size == 100 %><p class="mt-4 text-sm text-stone-600">Showing the 100 most recent matching orders.</p><% end %>
+  <nav class="mt-5 flex items-center justify-between gap-4" aria-label="Order history pages">
+    <p class="text-sm text-stone-600">Page <%= @page %> of <%= @total_pages %> · <%= pluralize(@total_count, "order") %></p>
+    <div class="flex gap-2">
+      <% if @page > 1 %>
+        <%= link_to "Previous", organization_admin_order_history_path(@query_params.merge(page: @page - 1)), class: "rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100" %>
+      <% end %>
+      <% if @page < @total_pages %>
+        <%= link_to "Next", organization_admin_order_history_path(@query_params.merge(page: @page + 1)), class: "rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100" %>
+      <% end %>
+    </div>
+  </nav>
 <% end %>

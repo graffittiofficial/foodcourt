@@ -1,0 +1,72 @@
+<div class="mb-8 flex items-center gap-3 px-2">
+  <span class="flex size-10 items-center justify-center rounded-xl bg-stone-950 text-lg font-bold text-white" aria-hidden="true">F</span>
+  <div>
+    <%= link_to organization_context ? (Current.organization ? organization_admin_root_path : organizations_path) : admin_root_path, class: "font-bold tracking-tight text-stone-950" do %>Foodcourt<% end %>
+    <p class="text-xs font-medium text-stone-500"><%= sidebar_title %></p>
+  </div>
+</div>
+
+<% if organization_context %>
+  <div class="mb-6 rounded-xl border border-stone-200 bg-stone-50 p-3">
+    <%= form_with url: switch_organizations_path, method: :patch do |form| %>
+      <%= form.label :organization_id, "Organization", class: "mb-2 block text-xs font-semibold uppercase tracking-wide text-stone-500" %>
+      <%= form.collection_select :organization_id, Current.user.administered_organizations.order(:name), :id, :name,
+        { selected: Current.organization&.id },
+        class: "w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm font-semibold text-stone-900 focus:border-stone-950 focus:outline-none focus:ring-2 focus:ring-stone-200" %>
+      <%= form.submit "Switch", class: "mt-2 w-full cursor-pointer rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100" %>
+    <% end %>
+  </div>
+<% end %>
+
+<nav class="flex-1 space-y-6" aria-label="Administration navigation">
+  <% navigation_groups.each do |group| %>
+    <section>
+      <h2 class="mb-2 px-3 text-xs font-semibold uppercase tracking-[0.12em] text-stone-400"><%= group.fetch(:label) %></h2>
+      <ul class="space-y-1">
+        <% group.fetch(:links).each do |item| %>
+          <% active = current_page?(item.fetch(:path)) || item[:active_prefix].present? && request.path.start_with?(item[:active_prefix]) %>
+          <li>
+            <%= link_to item.fetch(:path),
+              aria: { current: active ? "page" : nil },
+              data: { action: "click->admin-nav#close" },
+              class: "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors #{active ? 'bg-stone-950 text-white' : 'text-stone-600 hover:bg-stone-100 hover:text-stone-950'}" do %>
+              <svg class="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <% case item.fetch(:icon) %>
+                <% when :dashboard %>
+                  <rect x="3" y="3" width="8" height="8" rx="1" /><rect x="13" y="3" width="8" height="5" rx="1" /><rect x="13" y="10" width="8" height="11" rx="1" /><rect x="3" y="13" width="8" height="8" rx="1" />
+                <% when :search %>
+                  <circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 5 5" />
+                <% when :organization %>
+                  <path d="M3 21h18M5 21V7l7-4 7 4v14M9 10h.01M15 10h.01M9 14h.01M15 14h.01M10 21v-3h4v3" />
+                <% when :restaurant %>
+                  <path d="M4 3v7M7 3v7M4 7h3M5.5 10v11M15 3v18M15 3c3 2 4 5 4 8h-4" />
+                <% when :orders %>
+                  <path d="M6 3h12l2 3v15H4V6l2-3ZM4 8h16M8 12h8M8 16h5" />
+                <% when :delivery %>
+                  <path d="M3 6h11v11H3zM14 10h4l3 3v4h-7zM7 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM18 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" />
+                <% when :people %>
+                  <circle cx="9" cy="8" r="3" /><path d="M3 20v-1a6 6 0 0 1 12 0v1ZM16 5a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 5v1" />
+                <% when :reviews %>
+                  <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" />
+                <% when :reports %>
+                  <path d="M4 20V4M4 20h17M8 16l4-5 3 2 5-7" />
+                <% when :settings %>
+                  <circle cx="12" cy="12" r="3" /><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.6a8 8 0 0 1-1.5.9l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.5-.9l-1.7.6-1.4-2.4 1.4-1.1a7 7 0 0 1 0-1.8l-1.4-1.1 1.4-2.4 1.7.6a8 8 0 0 1 1.5-.9l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.5.9l1.7-.6 1.4 2.4-1.4 1.1a7 7 0 0 1 0 1.8Z" transform="translate(-1 -1)" />
+                <% end %>
+              </svg>
+              <span><%= item.fetch(:label) %></span>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    </section>
+  <% end %>
+</nav>
+
+<div class="mt-6 border-t border-stone-200 pt-4">
+  <p class="truncate px-3 text-xs text-stone-500"><%= Current.account.email_address %></p>
+  <%= button_to session_path, method: :delete, class: "mt-2 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-stone-600 hover:bg-stone-100 hover:text-stone-950" do %>
+    <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6" /></svg>
+    Sign out
+  <% end %>
+</div>

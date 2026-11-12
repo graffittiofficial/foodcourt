@@ -1,0 +1,43 @@
+<% values = series.values.map(&:to_f) %>
+<% maximum = [values.max || 0, 1].max %>
+<% chart_width = 640 %>
+<% chart_height = 230 %>
+<% left = 46 %>
+<% right = 18 %>
+<% top = 18 %>
+<% bottom = 188 %>
+<% points = series.each_with_index.map do |(date, value), index|
+  x = left + index * ((chart_width - left - right).to_f / [series.size - 1, 1].max)
+  y = bottom - (value.to_f / maximum) * (bottom - top)
+  [date, value, x.round(2), y.round(2)]
+end %>
+<article class="rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
+  <div class="mb-3">
+    <h3 class="text-lg font-bold text-stone-900"><%= title %></h3>
+    <p class="mt-1 text-sm text-stone-600"><%= description %></p>
+  </div>
+  <div class="overflow-x-auto">
+    <svg viewBox="0 0 <%= chart_width %> <%= chart_height %>" class="w-full min-w-[420px]" role="group" aria-label="<%= aria_label %>">
+      <line x1="<%= left %>" y1="<%= bottom %>" x2="<%= chart_width - right %>" y2="<%= bottom %>" stroke="#d6d3d1" stroke-width="1" />
+      <% if points.any? %>
+        <polyline points="<%= points.map { |(_, _, x, y)| "#{x},#{y}" }.join(" ") %>" fill="none" stroke="#c2410c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+        <% points.each do |date, value, x, y| %>
+          <%= link_to history_path.call(
+            { range: chart_range, created_on: date.iso8601 }.merge(currency ? { status: "completed" } : {})
+          ),
+            aria: { label: "#{date.strftime('%B %-d')}: #{currency ? number_to_currency(value) : pluralize(value, 'order')}" },
+            class: "focus:outline-none" do %>
+            <title><%= "#{date.strftime('%B %-d')}: #{currency ? number_to_currency(value) : pluralize(value, 'order')}" %></title>
+            <circle cx="<%= x %>" cy="<%= y %>" r="3.5" fill="transparent" />
+            <circle cx="<%= x %>" cy="<%= y %>" r="4" fill="#c2410c" />
+          <% end %>
+        <% end %>
+        <% [0, points.size / 2, points.size - 1].uniq.each do |index| %>
+          <% date, = points[index] %>
+          <% x = points[index][2] %>
+          <text x="<%= x %>" y="216" text-anchor="<%= index.zero? ? 'start' : index == points.size - 1 ? 'end' : 'middle' %>" fill="#57534e" font-size="12"><%= date.strftime("%b %-d") %></text>
+        <% end %>
+      <% end %>
+    </svg>
+  </div>
+</article>

@@ -1,0 +1,77 @@
+<% selected_staff_restaurant = if session[:staff_restaurant_id].present?
+  Current.organization&.restaurants&.find_by(id: session[:staff_restaurant_id])
+end %>
+<% organization_staff_links = if !Current.organization
+  []
+elsif selected_staff_restaurant
+  [
+    { label: "Staff dashboard", path: staff_dashboard_path, icon: :dashboard },
+    { label: "Staff orders", path: staff_orders_path, icon: :orders },
+    { label: "Staff menu", path: staff_menu_items_path, icon: :restaurant }
+  ]
+else
+  [ { label: "Choose restaurant", path: staff_restaurants_path, icon: :restaurant } ]
+end %>
+<% navigation_groups = [
+  { label: "Overview", links: [ { label: "Dashboard", path: organization_admin_root_path, icon: :dashboard } ] },
+  { label: "Operations", links: [
+    { label: "Restaurants", path: organization_admin_restaurants_path, active_prefix: "/organization/restaurants", icon: :restaurant },
+    { label: "Order history", path: organization_admin_order_history_path, active_prefix: "/organization/order-history", icon: :orders },
+    { label: "Reviews", path: organization_admin_reviews_path, active_prefix: "/organization/reviews", icon: :reviews }
+  ] },
+  { label: "Team", links: [
+    { label: "Staff", path: organization_admin_staff_index_path, active_prefix: "/organization/staff", icon: :people },
+    { label: "Organization admins", path: organization_admin_admins_path, active_prefix: "/organization/admins", icon: :organization }
+  ] },
+  { label: "Settings", links: [ { label: "Organization profile", path: edit_organization_admin_profile_path, active_prefix: "/organization/profile", icon: :settings } ] },
+  { label: "Tools", links: [
+    { label: "Search", path: search_path, icon: :search },
+    { label: "Reports", path: reports_path, active_prefix: "/reports", icon: :reports }
+  ] }
+] %>
+<% navigation_groups << { label: "Restaurant operations", links: organization_staff_links } if organization_staff_links.any? %>
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "#{Current.organization&.name || 'Organization admin'} | Foodcourt" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Foodcourt">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= yield :head %>
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+    <%= stylesheet_link_tag :app, "data-turbo-track": Rails.env.production? ? "reload" : "" %>
+    <%= javascript_include_tag "application", "data-turbo-track": Rails.env.production? ? "reload" : "", type: "module" %>
+  </head>
+  <body class="min-h-screen bg-stone-100 text-stone-950 antialiased">
+    <div data-controller="admin-nav" data-action="keydown.esc->admin-nav#close">
+      <button type="button" class="fixed inset-0 z-40 hidden bg-stone-950/40 lg:hidden" aria-label="Close navigation" data-admin-nav-target="backdrop" data-action="click->admin-nav#close"></button>
+      <aside id="admin-sidebar" class="fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col overflow-y-auto border-r border-stone-200 bg-white px-4 py-5 shadow-xl transition-transform duration-200 lg:translate-x-0 lg:shadow-none" data-admin-nav-target="sidebar">
+        <%= render "layouts/admin_sidebar", sidebar_title: "Organization admin", navigation_groups: navigation_groups, organization_context: true %>
+      </aside>
+      <div class="min-h-screen lg:pl-72">
+        <header class="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-stone-200 bg-white/95 px-4 backdrop-blur sm:px-6 lg:px-8">
+          <div class="flex min-w-0 items-center gap-3">
+            <button type="button" class="inline-flex size-10 shrink-0 items-center justify-center rounded-lg border border-stone-200 text-stone-700 hover:bg-stone-100 lg:hidden" aria-label="Open navigation" aria-controls="admin-sidebar" aria-expanded="false" data-admin-nav-target="toggle" data-action="click->admin-nav#open">
+              <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+            </button>
+            <p class="truncate text-sm font-semibold text-stone-500"><%= Current.organization&.name || "Choose an Organization" %></p>
+          </div>
+          <% if Current.organization %>
+            <%= link_to "Add restaurant", new_organization_admin_restaurant_path, class: "shrink-0 rounded-lg bg-orange-700 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-800" %>
+          <% end %>
+        </header>
+        <main class="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          <% flash.each do |type, message| %>
+            <p class="mb-5 rounded-lg px-4 py-3 <%= type == "alert" ? "bg-red-50 text-red-800" : "bg-green-50 text-green-800" %>" role="<%= type == "alert" ? "alert" : "status" %>"><%= message %></p>
+          <% end %>
+          <%= yield %>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>
